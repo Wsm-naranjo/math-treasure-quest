@@ -1695,6 +1695,19 @@
             </div>
         </div>
 
+        <script>
+        (function() {
+            var isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
+            if (isMobile) {
+                var el;
+                el = document.getElementById('instr-keyboard'); if (el) el.style.display = 'none';
+                el = document.getElementById('instr-mobile'); if (el) el.style.display = '';
+                el = document.getElementById('instr-mobile-jump'); if (el) el.style.display = '';
+                el = document.getElementById('instr-mobile-tap'); if (el) el.style.display = '';
+            }
+        })();
+        </script>
+
         <!-- HUD Layer -->
         <div id="hud" class="hidden">
             <!-- Mission Tracker -->
@@ -3336,22 +3349,12 @@
                 // Difficulty (default normal)
                 this.difficulty = 'normal';
                 
-                // Sort game state
                 this.sortOrder = [];
-
-                // Swap instructions for mobile
-                if (this.isMobile) {
-                    document.getElementById('instr-keyboard').style.display = 'none';
-                    document.getElementById('instr-mobile').style.display = '';
-                    document.getElementById('instr-mobile-jump').style.display = '';
-                    document.getElementById('instr-mobile-tap').style.display = '';
-                }
 
                 this.initThree();
                 this.initModules();
                 this.setupUIListeners();
                 this.setupMobileControls();
-                this.checkOrientationWarning();
                 this.simulateLoading();
             }
 
@@ -3435,6 +3438,9 @@
                 if (this.isMobile) {
                     this.requestFullscreen();
                 }
+
+                // Activar advertencia de landscape solo cuando se está dentro del juego
+                this.checkOrientationWarning();
 
                 this.startTime = Date.now();
                 this.animate();
