@@ -507,6 +507,48 @@
             transform: translate(-50%, 20px) scale(0.9);
         }
 
+        /* --- AUDIO SETTINGS (Bottom Left) --- */
+        #audio-settings {
+            position: absolute;
+            bottom: 22px;
+            left: 22px;
+            pointer-events: auto;
+            display: flex;
+            gap: 12px;
+            padding: 8px 14px;
+            border-radius: 30px;
+            z-index: 120;
+        }
+
+        .audio-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+        }
+
+        .audio-btn:hover {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: var(--color-cyan);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .audio-btn.muted {
+            background: rgba(255, 0, 127, 0.1);
+            border-color: var(--color-magenta);
+            color: var(--color-magenta);
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.15);
+        }
+
         /* --- ACHIEVEMENT / SUCCESS BANNER --- */
         #achievement-banner {
             position: absolute;
@@ -1052,6 +1094,12 @@
             </div>
         </div>
 
+        <!-- Audio Settings (Bottom Left) -->
+        <div id="audio-settings" class="glass-panel">
+            <button id="btn-toggle-music" class="audio-btn" title="Música On/Off">🎵</button>
+            <button id="btn-toggle-sfx" class="audio-btn" title="Efectos On/Off">🔊</button>
+        </div>
+
         <!-- Math Question Modal -->
         <div id="math-modal" class="hidden overlay-screen">
             <div class="glass-panel modal-content">
@@ -1141,6 +1189,8 @@
                 this.musicPlaying = false;
                 this.ambientOscillators = [];
                 this.ambientInterval = null;
+                this.musicMuted = false;
+                this.sfxMuted = false;
             }
 
             init() {
@@ -1153,10 +1203,10 @@
                     this.masterGain.gain.setValueAtTime(0.6, this.ctx.currentTime);
                     
                     this.musicGain = this.ctx.createGain();
-                    this.musicGain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+                    this.musicGain.gain.setValueAtTime(this.musicMuted ? 0.0001 : 0.05, this.ctx.currentTime);
                     
                     this.sfxGain = this.ctx.createGain();
-                    this.sfxGain.gain.setValueAtTime(0.7, this.ctx.currentTime);
+                    this.sfxGain.gain.setValueAtTime(this.sfxMuted ? 0.0001 : 0.7, this.ctx.currentTime);
                     
                     this.musicGain.connect(this.masterGain);
                     this.sfxGain.connect(this.masterGain);
@@ -1169,13 +1219,29 @@
                 }
             }
 
+            toggleMusic() {
+                this.musicMuted = !this.musicMuted;
+                if (this.initialized && this.musicGain && this.ctx) {
+                    this.musicGain.gain.setValueAtTime(this.musicMuted ? 0.0001 : 0.05, this.ctx.currentTime);
+                }
+                return this.musicMuted;
+            }
+
+            toggleSfx() {
+                this.sfxMuted = !this.sfxMuted;
+                if (this.initialized && this.sfxGain && this.ctx) {
+                    this.sfxGain.gain.setValueAtTime(this.sfxMuted ? 0.0001 : 0.7, this.ctx.currentTime);
+                }
+                return this.sfxMuted;
+            }
+
             resume() {
                 if (!this.initialized) this.init();
                 else if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
             }
 
             playTone(frequency, type, duration, gainStart, slideTo = null, delay = 0) {
-                if (!this.initialized || !this.ctx || this.ctx.state === 'suspended') return;
+                if (!this.initialized || !this.ctx || this.ctx.state === 'suspended' || this.sfxMuted) return;
 
                 const time = this.ctx.currentTime + delay;
                 const osc = this.ctx.createOscillator();
@@ -1285,11 +1351,12 @@
                 if (this.musicPlaying || !this.initialized || !this.ctx) return;
                 this.musicPlaying = true;
                 
+                // Raised chords up an octave to make them cheerful, spacey, and dreamy
                 const chords = [
-                    [130.81, 164.81, 196.00, 293.66],
-                    [174.61, 220.00, 261.63, 392.00],
-                    [146.83, 174.61, 220.00, 329.63],
-                    [196.00, 246.94, 293.66, 440.00]
+                    [261.63, 329.63, 392.00, 587.33], // C major 9 (C4, E4, G4, D5) - very soft, light
+                    [349.23, 440.00, 523.25, 659.25], // F major 9 (F4, A4, C5, E5) - uplifting
+                    [293.66, 349.23, 440.00, 587.33], // D minor 7 (D4, F4, A4, D5) - soft
+                    [392.00, 493.88, 587.33, 659.25]  // G major 7/9 (G4, B4, D5, E5) - pleasant resolving
                 ];
                 let chordIndex = 0;
                 
@@ -1314,8 +1381,8 @@
                         osc.frequency.setValueAtTime(freq + (Math.random() - 0.5) * 0.8, time);
                         
                         gain.gain.setValueAtTime(0.0001, time);
-                        gain.gain.linearRampToValueAtTime(0.12, time + fadeTime);
-                        gain.gain.setValueAtTime(0.12, time + chordDuration - fadeTime);
+                        gain.gain.linearRampToValueAtTime(0.05, time + fadeTime); // Lowered gain to 0.05 for subtle background pad
+                        gain.gain.setValueAtTime(0.05, time + chordDuration - fadeTime);
                         gain.gain.exponentialRampToValueAtTime(0.0001, time + chordDuration - 0.05);
                         
                         osc.connect(gain);
@@ -1954,7 +2021,7 @@
                 group.position.set(x, y, z);
 
                 const pillarMat = new THREE.MeshStandardMaterial({
-                    color: 0x0f172a, roughness: 0.2, metalness: 0.95
+                    color: 0x475569, roughness: 0.15, metalness: 0.85
                 });
                 const coreGeo = new THREE.BoxGeometry(0.8, 2.0, 0.4);
                 const coreMesh = new THREE.Mesh(coreGeo, pillarMat);
@@ -1967,16 +2034,55 @@
                 const symbolMesh = new THREE.Mesh(symbolGeo, symbolMat);
                 symbolMesh.position.set(0, 1.1, 0.02);
                 group.add(symbolMesh);
+
+                // Glowing crown ring at the top
+                const capGeo = new THREE.TorusGeometry(0.4, 0.05, 8, 24);
+                const capMat = new THREE.MeshBasicMaterial({ color: glowColor });
+                const capMesh = new THREE.Mesh(capGeo, capMat);
+                capMesh.rotation.x = Math.PI / 2;
+                capMesh.position.set(0, 2.05, 0);
+                group.add(capMesh);
+
+                // Glowing base ring
+                const baseRingGeo = new THREE.TorusGeometry(0.6, 0.05, 8, 24);
+                const baseRingMat = new THREE.MeshBasicMaterial({ color: glowColor });
+                const baseRingMesh = new THREE.Mesh(baseRingGeo, baseRingMat);
+                baseRingMesh.rotation.x = Math.PI / 2;
+                baseRingMesh.position.set(0, 0.05, 0);
+                group.add(baseRingMesh);
+
+                // Vertical light beam pointing up (space beacon)
+                const beamGeo = new THREE.CylinderGeometry(0.15, 0.35, 30, 16, 1, true);
+                const beamMat = new THREE.MeshBasicMaterial({
+                    color: glowColor,
+                    transparent: true,
+                    opacity: 0.22,
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.DoubleSide
+                });
+                const beamMesh = new THREE.Mesh(beamGeo, beamMat);
+                beamMesh.position.set(0, 15, 0);
+                group.add(beamMesh);
                 
-                const pLight = new THREE.PointLight(glowColor, 0.8, 4);
+                const pLight = new THREE.PointLight(glowColor, 1.2, 6);
                 pLight.position.set(0, 1.2, 0.4);
                 group.add(pLight);
 
                 this.scene.add(group);
 
                 this.monoliths.push({
-                    id: id, mesh: group, glowColor: glowColor, light: pLight, symbol: symbolMesh,
-                    position: new THREE.Vector3(x, y, z), label: label, solved: false, radius: 2.2
+                    id: id,
+                    mesh: group,
+                    glowColor: glowColor,
+                    light: pLight,
+                    symbol: symbolMesh,
+                    cap: capMesh,
+                    baseRing: baseRingMesh,
+                    beam: beamMesh,
+                    position: new THREE.Vector3(x, y, z),
+                    label: label,
+                    solved: false,
+                    radius: 2.2
                 });
             }
 
@@ -2441,6 +2547,31 @@
 
                 document.getElementById('restart-btn').addEventListener('click', () => this.resetNexusGame());
                 document.getElementById('retry-btn').addEventListener('click', () => this.resetNexusGame());
+
+                // Mute buttons listeners
+                document.getElementById('btn-toggle-music').addEventListener('click', () => {
+                    const isMuted = gameAudio.toggleMusic();
+                    const btn = document.getElementById('btn-toggle-music');
+                    if (isMuted) {
+                        btn.innerText = '🔇';
+                        btn.classList.add('muted');
+                    } else {
+                        btn.innerText = '🎵';
+                        btn.classList.remove('muted');
+                    }
+                });
+
+                document.getElementById('btn-toggle-sfx').addEventListener('click', () => {
+                    const isMuted = gameAudio.toggleSfx();
+                    const btn = document.getElementById('btn-toggle-sfx');
+                    if (isMuted) {
+                        btn.innerText = '🔇';
+                        btn.classList.add('muted');
+                    } else {
+                        btn.innerText = '🔊';
+                        btn.classList.remove('muted');
+                    }
+                });
             }
 
             attemptInteraction() {
@@ -2685,6 +2816,27 @@
                 }
 
                 this.showAchievementBanner(title, desc, icon, colorHex);
+
+                // Cambiar el color de los aros y el haz de luz a verde
+                if (monolith.cap) monolith.cap.material.color.setHex(0x10b981);
+                if (monolith.baseRing) monolith.baseRing.material.color.setHex(0x10b981);
+                if (monolith.beam) {
+                    monolith.beam.material.color.setHex(0x10b981);
+                    // Fade out the light beam slowly
+                    let op = 0.22;
+                    const fade = () => {
+                        if (op > 0) {
+                            op -= 0.015;
+                            monolith.beam.material.opacity = op;
+                            requestAnimationFrame(fade);
+                        } else {
+                            try {
+                                monolith.mesh.remove(monolith.beam);
+                            } catch(e) {}
+                        }
+                    };
+                    fade();
+                }
             }
 
             showAchievementBanner(title, desc, icon, colorHex) {
