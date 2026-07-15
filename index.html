@@ -1563,24 +1563,223 @@
             30%, 60%, 90% { transform: translateX(10px); }
         }
 
+        /* Collapse functionality for mobile */
+        .mobile-only {
+            display: none;
+        }
+
+        .collapse-icon {
+            float: right;
+            transition: transform 0.3s ease;
+            font-size: 0.7rem;
+            margin-left: 6px;
+        }
+
+        .hud-panel.collapsed .collapse-icon {
+            transform: rotate(-90deg);
+        }
+
+        .hud-panel.collapsed .panel-content {
+            display: none;
+        }
+
+        /* Desktop: Normal behavior */
+        @media (min-width: 769px) {
+            .panel-header {
+                cursor: default;
+            }
+
+            .panel-title {
+                display: inline;
+            }
+        }
+
         /* --- RESPONSIVE ADJUSTMENTS --- */
         @media (max-width: 768px) {
-            #hud {
-                padding: 14px;
-                flex-direction: column;
-                gap: 10px;
+            /* Show mobile-only elements */
+            .mobile-only {
+                display: inline;
             }
-            .left-panel, .right-panel {
+
+            /* Make panel headers clickable on mobile */
+            .panel-header {
+                cursor: pointer;
+                user-select: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .panel-title {
+                flex: 1;
+            }
+
+            /* Hide desktop interact prompt completely */
+            #interact-prompt {
+                display: none !important;
+            }
+
+            /* Show mobile controls */
+            #mobile-controls {
+                display: block !important;
+            }
+
+            /* Compact HUD */
+            #hud {
+                padding: 6px;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .hud-panel {
+                padding: 6px 10px;
+                background: rgba(10, 15, 30, 0.4);
+            }
+
+            .panel-header {
+                font-size: 0.65rem;
+                margin-bottom: 4px;
+            }
+
+            /* Mission panel - collapsed by default on mobile */
+            .left-panel {
                 width: 100%;
             }
+
+            .left-panel .panel-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+
+            .left-panel:not(.collapsed) .panel-content {
+                max-height: 200px;
+            }
+
+            .quest-text {
+                font-size: 0.7rem;
+                line-height: 1.2;
+                margin-bottom: 4px;
+            }
+
+            .progress-indicator {
+                font-size: 0.6rem;
+                gap: 2px;
+            }
+
+            .progress-indicator > div {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .dot {
+                width: 6px;
+                height: 6px;
+            }
+
+            /* Center panel - lives compact with emoji on mobile */
+            .center-panel {
+                padding: 4px 8px;
+                flex-direction: row;
+                align-items: center;
+                gap: 6px;
+                width: auto;
+                align-self: center;
+            }
+
+            .center-panel .panel-header {
+                margin-bottom: 0;
+                font-size: 1rem;
+            }
+
+            .center-panel .panel-header::before {
+                content: "💗 ";
+            }
+
+            .center-panel .panel-header {
+                font-size: 0;
+            }
+
+            .lives-container {
+                gap: 4px;
+                margin-top: 0;
+            }
+
+            .heart {
+                font-size: 1rem;
+            }
+
+            /* Keys panel - collapsed by default */
+            .right-panel {
+                width: 100%;
+            }
+
+            .right-panel .panel-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+
+            .right-panel:not(.collapsed) .panel-content {
+                max-height: 150px;
+            }
+
+            .keys-container {
+                gap: 4px;
+                justify-content: flex-start;
+            }
+
+            .key-slot {
+                flex: 0 0 auto;
+                min-width: 55px;
+                padding: 6px 4px;
+            }
+
+            .key-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 0.85rem;
+            }
+
+            .key-slot span {
+                font-size: 0.6rem;
+            }
+
+            /* Audio settings - center top */
+            #audio-settings {
+                bottom: auto;
+                left: 50%;
+                top: 6px;
+                transform: translateX(-50%);
+                padding: 4px 8px;
+            }
+
+            .audio-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+
             .hud-controls-helper {
                 display: none;
             }
+
             .modal-content, .loading-content, .victory-content {
-                padding: 24px;
+                padding: 20px;
+                max-width: 95%;
             }
+
             .choice-grid {
                 grid-template-columns: 1fr;
+            }
+
+            /* Mobile button styles */
+            .mobile-action-btn.interact-btn {
+                background: linear-gradient(135deg, var(--color-cyan) 0%, #4facfe 100%);
+                border-color: var(--color-cyan);
+                box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+                font-weight: 900;
             }
         }
 
@@ -1711,13 +1910,18 @@
         <!-- HUD Layer -->
         <div id="hud" class="hidden">
             <!-- Mission Tracker -->
-            <div class="hud-panel mission-panel left-panel">
-                <div class="panel-header">Misión Activa</div>
-                <div id="current-quest" class="quest-text">Explora el archipiélago y activa los Monolitos</div>
-                <div class="progress-indicator">
-                    <span class="dot" id="dot-arithmetic"></span> Aritmética
-                    <span class="dot" id="dot-algebra"></span> Álgebra
-                    <span class="dot" id="dot-geometry"></span> Geometría
+            <div class="hud-panel mission-panel left-panel" id="mission-panel">
+                <div class="panel-header">
+                    <span class="panel-title">Misión Activa</span>
+                    <span class="collapse-icon mobile-only">▼</span>
+                </div>
+                <div class="panel-content">
+                    <div id="current-quest" class="quest-text">Explora el archipiélago y activa los Monolitos</div>
+                    <div class="progress-indicator">
+                        <div><span class="dot" id="dot-arithmetic"></span> Aritmética</div>
+                        <div><span class="dot" id="dot-algebra"></span> Álgebra</div>
+                        <div><span class="dot" id="dot-geometry"></span> Geometría</div>
+                    </div>
                 </div>
             </div>
 
@@ -1732,23 +1936,36 @@
             </div>
 
             <!-- Keys Inventory -->
-            <div class="hud-panel inventory-panel right-panel">
-                <div class="panel-header">Llaves del Nexo</div>
-                <div class="keys-container">
-                    <div class="key-slot" id="slot-arithmetic" title="Llave de Aritmética">
-                        <div class="key-icon color-cyan">➕</div>
-                        <span>Aritmética</span>
-                    </div>
-                    <div class="key-slot" id="slot-algebra" title="Llave de Álgebra">
-                        <div class="key-icon color-magenta">x</div>
-                        <span>Álgebra</span>
-                    </div>
-                    <div class="key-slot" id="slot-geometry" title="Llave de Geometría">
-                        <div class="key-icon color-emerald">📐</div>
-                        <span>Geometría</span>
+            <div class="hud-panel inventory-panel right-panel" id="keys-panel">
+                <div class="panel-header">
+                    <span class="panel-title">Llaves del Nexo</span>
+                    <span class="collapse-icon mobile-only">▼</span>
+                </div>
+                <div class="panel-content">
+                    <div class="keys-container">
+                        <div class="key-slot" id="slot-arithmetic" title="Llave de Aritmética">
+                            <div class="key-icon color-cyan">➕</div>
+                            <span>Aritmética</span>
+                        </div>
+                        <div class="key-slot" id="slot-algebra" title="Llave de Álgebra">
+                            <div class="key-icon color-magenta">x</div>
+                            <span>Álgebra</span>
+                        </div>
+                        <div class="key-slot" id="slot-geometry" title="Llave de Geometría">
+                            <div class="key-icon color-emerald">📐</div>
+                            <span>Geometría</span>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Controls Helper (Bottom) -->
+            <div class="hud-controls-helper">
+                <span>[WASD] Moverse</span>
+                <span>[ESPACIO] Saltar</span>
+                <span>[Arrastrar Mouse] Cámara</span>
+            </div>
+        </div>
 
             <!-- Controls Helper (Bottom) -->
             <div class="hud-controls-helper">
@@ -3324,6 +3541,35 @@
         }
 
         /* =================================================================
+           MOBILE PANEL TOGGLE FUNCTION
+           ================================================================= */
+        function toggleMobilePanel(panelId) {
+            // Only work on mobile
+            if (window.innerWidth > 768) return;
+            
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.classList.toggle('collapsed');
+            }
+        }
+
+        // Setup mobile panel click handlers
+        function setupMobilePanelToggles() {
+            if (window.innerWidth <= 768) {
+                const missionHeader = document.querySelector('#mission-panel .panel-header');
+                const keysHeader = document.querySelector('#keys-panel .panel-header');
+                
+                if (missionHeader) {
+                    missionHeader.addEventListener('click', () => toggleMobilePanel('mission-panel'));
+                }
+                
+                if (keysHeader) {
+                    keysHeader.addEventListener('click', () => toggleMobilePanel('keys-panel'));
+                }
+            }
+        }
+
+        /* =================================================================
            5. GAME ORCHESTRATOR & EVENT BINDINGS
            ================================================================= */
         class Game {
@@ -4221,6 +4467,17 @@
         // Start game instance once DOM is loaded
         window.addEventListener('DOMContentLoaded', () => {
             window.gameInstance = new Game();
+            
+            // Setup mobile panel toggles
+            setupMobilePanelToggles();
+            
+            // Auto-collapse panels on mobile
+            if (window.innerWidth <= 768) {
+                const missionPanel = document.getElementById('mission-panel');
+                const keysPanel = document.getElementById('keys-panel');
+                if (missionPanel) missionPanel.classList.add('collapsed');
+                if (keysPanel) keysPanel.classList.add('collapsed');
+            }
         });
     </script>
 </body>
