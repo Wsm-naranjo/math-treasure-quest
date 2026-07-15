@@ -844,14 +844,13 @@ body, html {
     30%, 60%, 90% { transform: translateX(10px); }
 }
 
-
 /* --- MOBILE CONTROLS --- */
 #mobile-controls {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 180px;
+    height: 200px;
     pointer-events: none;
     z-index: 130;
     display: none;
@@ -868,7 +867,10 @@ body, html {
     justify-content: center;
     align-items: center;
     -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
+    touch-action: none;
 }
 
 #joystick-ring {
@@ -893,6 +895,7 @@ body, html {
     left: calc(50% - 22.5px);
     box-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
     transition: transform 0.05s ease;
+    pointer-events: none;
 }
 
 #mobile-actions {
@@ -922,9 +925,13 @@ body, html {
     outline: none;
     transition: all 0.15s ease;
     -webkit-tap-highlight-color: transparent;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
     user-select: none;
     min-width: 80px;
     text-align: center;
+    touch-action: manipulation;
 }
 
 .mobile-action-btn:active {
@@ -939,13 +946,13 @@ body, html {
     border-color: var(--color-cyan);
     box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
     font-size: 1rem;
+    font-weight: 900;
 }
 
 .mobile-action-btn.jump-btn {
     background: rgba(255, 255, 255, 0.08);
 }
 
-/* --- RESPONSIVE ADJUSTMENTS --- */
 
 @media (max-width: 768px) {
     /* Show mobile controls */
@@ -958,83 +965,112 @@ body, html {
         display: none !important;
     }
 
-    /* Compact HUD for mobile */
+    /* Compact HUD for mobile - stack vertically */
     #hud {
         padding: 8px;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
         align-items: stretch;
+        pointer-events: none;
     }
 
     .hud-panel {
-        padding: 10px 14px;
-        border-radius: 12px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: rgba(10, 15, 30, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        pointer-events: auto;
     }
 
     .panel-header {
-        font-size: 0.65rem;
-        margin-bottom: 6px;
+        font-size: 0.6rem;
+        margin-bottom: 4px;
+        letter-spacing: 1px;
     }
 
-    /* Left Panel - Make it compact and semi-transparent */
+    /* Left Panel - Mission - Make it ultra compact */
     .left-panel {
-        width: auto;
+        width: 100%;
         max-width: 100%;
-        background: rgba(10, 15, 30, 0.5);
     }
 
     .quest-text {
-        font-size: 0.8rem;
-        margin-bottom: 8px;
-        line-height: 1.3;
+        font-size: 0.75rem;
+        margin-bottom: 6px;
+        line-height: 1.2;
     }
 
     .progress-indicator {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
+        gap: 4px;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .progress-indicator > div {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .dot {
+        width: 6px;
+        height: 6px;
+        margin-right: 4px;
+    }
+
+    /* Center Panel - Lives inline and compact */
+    .center-panel {
+        padding: 6px 10px;
+        width: auto;
+        align-self: flex-start;
+        flex-direction: row;
+        align-items: center;
         gap: 6px;
     }
 
-    /* Center Panel - Lives more compact */
-    .center-panel {
-        padding: 6px 12px;
-        background: rgba(10, 15, 30, 0.5);
-        width: auto;
-        align-self: center;
+    .panel-header {
+        margin-bottom: 0 !important;
+        margin-right: 8px;
     }
 
     .lives-container {
-        gap: 6px;
+        gap: 4px;
+        margin-top: 0;
     }
 
     .heart {
-        font-size: 1.2rem;
-    }
-
-    /* Right Panel - Keys more compact */
-    .right-panel {
-        width: auto;
-        max-width: 100%;
-        background: rgba(10, 15, 30, 0.5);
-    }
-
-    .keys-container {
-        gap: 8px;
-    }
-
-    .key-slot {
-        padding: 8px 4px;
-        border-radius: 10px;
-    }
-
-    .key-icon {
-        width: 30px;
-        height: 30px;
         font-size: 1rem;
     }
 
+    /* Right Panel - Keys inline and compact */
+    .right-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .keys-container {
+        gap: 6px;
+        justify-content: flex-start;
+    }
+
+    .key-slot {
+        flex: 0 0 auto;
+        min-width: 60px;
+        padding: 6px 4px;
+        border-radius: 8px;
+    }
+
+    .key-icon {
+        width: 26px;
+        height: 26px;
+        font-size: 0.9rem;
+    }
+
     .key-slot span {
-        font-size: 0.65rem;
-        margin-top: 4px;
+        font-size: 0.6rem;
+        margin-top: 2px;
     }
 
     /* Hide desktop controls helper */
@@ -1044,111 +1080,253 @@ body, html {
 
     /* Modal adjustments */
     .modal-content, .loading-content, .victory-content, .game-over-content {
-        padding: 20px;
+        padding: 16px;
         max-width: 95%;
+        width: 95%;
+    }
+
+    .modal-header h3 {
+        font-size: 0.8rem;
+    }
+
+    .question-text {
+        font-size: 1.1rem;
     }
 
     .choice-grid {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 8px;
     }
 
     .choice-btn {
-        padding: 12px;
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+
+    #math-answer-input {
         font-size: 1rem;
+        padding: 10px 14px;
     }
 
     /* Loading screen */
     .loading-content h1 {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
     }
 
     .subtitle {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 
     .instructions-panel {
-        padding: 14px;
+        padding: 12px;
     }
 
     .instructions-panel h3 {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 
     .instructions-panel li {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         margin-bottom: 8px;
     }
 
     /* Victory/Game Over screens */
     .trophy-glow, .skull-glow {
-        font-size: 2.8rem;
-        margin-bottom: 16px;
+        font-size: 2.5rem;
+        margin-bottom: 12px;
     }
 
     .victory-content h1, .game-over-content h1 {
-        font-size: 1.8rem;
-        margin-bottom: 10px;
+        font-size: 1.5rem;
+        margin-bottom: 8px;
     }
 
     .victory-message, .game-over-message {
-        font-size: 0.9rem;
-        margin-bottom: 20px;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
     }
 
     .stats-panel {
-        flex-direction: column;
-        gap: 12px;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .stat-value {
+        font-size: 1.3rem;
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
     }
 
     /* Audio controls repositioning */
     #audio-settings {
-        bottom: 200px;
-        left: 12px;
+        bottom: auto;
+        top: 8px;
+        left: 8px;
+        right: auto;
+        padding: 4px 8px;
     }
 
     .audio-btn {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
     }
 
     /* Achievement banner */
     #achievement-banner {
         max-width: 90%;
-        padding: 12px 24px;
+        padding: 10px 20px;
+        top: 15%;
     }
 
     .banner-icon {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
     }
 
     .banner-text-group h2 {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
     }
 
     .banner-text-group p {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
+    }
+
+    /* Mobile controls improvements */
+    #mobile-controls {
+        height: 200px;
+    }
+
+    #joystick-zone {
+        bottom: 15px;
+        left: 15px;
+        width: 100px;
+        height: 100px;
+    }
+
+    #joystick-ring {
+        width: 90px;
+        height: 90px;
+    }
+
+    #joystick-knob {
+        width: 40px;
+        height: 40px;
+        top: calc(50% - 20px);
+        left: calc(50% - 20px);
+    }
+
+    #mobile-actions {
+        bottom: 15px;
+        right: 15px;
+        gap: 8px;
+    }
+
+    .mobile-action-btn {
+        font-size: 0.85rem;
+        padding: 10px 20px;
+        min-width: 70px;
+    }
+
+    .mobile-action-btn.interact-btn {
+        font-size: 0.9rem;
+        padding: 12px 22px;
     }
 }
 
-/* Extra small devices */
+/* Extra small devices - more aggressive optimization */
 @media (max-width: 480px) {
-    .left-panel, .right-panel, .center-panel {
-        transform: scale(0.95);
-        transform-origin: top left;
+    #hud {
+        padding: 6px;
+        gap: 4px;
+    }
+
+    .hud-panel {
+        padding: 6px 10px;
+    }
+
+    .quest-text {
+        font-size: 0.7rem;
+    }
+
+    .progress-indicator {
+        font-size: 0.6rem;
+    }
+
+    .panel-header {
+        font-size: 0.55rem;
+    }
+
+    .keys-container {
+        gap: 4px;
+    }
+
+    .key-slot {
+        min-width: 55px;
+        padding: 5px 3px;
+    }
+
+    .key-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 0.85rem;
+    }
+
+    .key-slot span {
+        font-size: 0.55rem;
+    }
+
+    .heart {
+        font-size: 0.9rem;
     }
 
     .modal-content {
-        padding: 16px;
+        padding: 14px;
     }
 
     .question-text {
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
 
     #math-answer-input {
-        font-size: 1rem;
-        padding: 12px 16px;
+        font-size: 0.95rem;
+        padding: 8px 12px;
+    }
+
+    #joystick-zone {
+        width: 90px;
+        height: 90px;
+        left: 10px;
+        bottom: 10px;
+    }
+
+    #joystick-ring {
+        width: 80px;
+        height: 80px;
+    }
+
+    #joystick-knob {
+        width: 35px;
+        height: 35px;
+        top: calc(50% - 17.5px);
+        left: calc(50% - 17.5px);
+    }
+
+    #mobile-actions {
+        right: 10px;
+        bottom: 10px;
+    }
+
+    .mobile-action-btn {
+        font-size: 0.8rem;
+        padding: 8px 16px;
+        min-width: 60px;
+    }
+
+    .audio-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
     }
 }
