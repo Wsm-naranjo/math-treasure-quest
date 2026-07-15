@@ -140,6 +140,16 @@
             transition: opacity 0.5s ease;
         }
 
+        .overlay-screen.scrollable {
+            overflow-y: auto;
+            align-items: flex-start;
+            padding: 16px 0;
+        }
+
+        .overlay-screen.scrollable .glass-panel {
+            margin: auto 0;
+        }
+
         .overlay-screen.active {
             opacity: 1;
             pointer-events: auto;
@@ -1201,6 +1211,48 @@
             animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
+        .modal-content.large {
+            max-width: 640px;
+            padding: 28px 32px;
+        }
+
+        .modal-content.large .modal-body {
+            min-height: 265px;
+        }
+
+        .modal-content.large .shape-canvas {
+            height: 170px;
+        }
+
+        .modal-content.large .sort-cards-container,
+        .modal-content.large .sort-slots-container {
+            gap: 16px;
+        }
+
+        .modal-content.large .sort-card {
+            width: 54px;
+            height: 48px;
+            font-size: 1.1rem;
+        }
+
+        .modal-content.large .sort-slot {
+            width: 54px;
+            height: 48px;
+            font-size: 1.1rem;
+        }
+
+        .modal-content.large .scale-beam-container {
+            height: 170px;
+        }
+
+        .modal-content.large .slider-container label {
+            font-size: 1rem;
+        }
+
+        .modal-content.large .plate-load {
+            font-size: 0.95rem;
+        }
+
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -1529,6 +1581,71 @@
             }
             .choice-grid {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 850px) and (orientation: portrait) {
+            .overlay-screen#loading-screen {
+                align-items: flex-start;
+                overflow-y: auto;
+                padding: 12px 0;
+            }
+            #loading-screen .loading-content {
+                padding: 20px 18px;
+                margin: auto 0;
+                max-width: 400px;
+            }
+            #loading-screen .logo-container {
+                margin-bottom: 12px;
+            }
+            #loading-screen h1 {
+                font-size: 1.4rem;
+            }
+            #loading-screen .subtitle {
+                font-size: 0.78rem;
+                margin-bottom: 16px;
+            }
+            #loading-screen .instructions-panel {
+                padding: 12px 14px;
+                margin-bottom: 12px;
+            }
+            #loading-screen .instructions-panel h3 {
+                font-size: 0.8rem;
+                margin-bottom: 8px;
+            }
+            #loading-screen .instructions-panel li {
+                font-size: 0.75rem;
+                margin-bottom: 8px;
+            }
+            #loading-screen .key {
+                font-size: 0.65rem;
+                padding: 1px 4px;
+            }
+            #loading-screen .progress-bar-container {
+                margin-bottom: 8px;
+            }
+            #loading-screen .loading-status {
+                font-size: 0.7rem;
+                margin-bottom: 14px;
+            }
+            #loading-screen .difficulty-panel {
+                margin: 8px 0 12px 0;
+            }
+            #loading-screen .difficulty-panel h3 {
+                font-size: 0.7rem;
+            }
+            #loading-screen .diff-btn {
+                font-size: 0.7rem;
+                padding: 4px 10px;
+            }
+            #loading-screen .glow-button {
+                font-size: 0.85rem;
+                padding: 10px 20px;
+            }
+            #loading-screen .glowing-orb {
+                width: 80px;
+                height: 80px;
+                top: -30px;
             }
         }
     </style>
@@ -3572,6 +3689,13 @@
                 scaleContainer.classList.add('hidden');
                 shapeContainer.classList.add('hidden');
                 sortContainer.classList.add('hidden');
+
+                const modalContent = document.querySelector('.modal-content');
+                if (q.type === 'scale' || q.type === 'shape' || q.type === 'sort') {
+                    modalContent.classList.add('large');
+                } else {
+                    modalContent.classList.remove('large');
+                }
 
                 if (q.type === 'input') {
                     textContainer.classList.remove('hidden');
