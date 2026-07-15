@@ -649,6 +649,549 @@
             color: #fff;
         }
 
+        /* --- LANDSCAPE WARNING --- */
+        #landscape-warning {
+            position: fixed;
+            inset: 0;
+            background: #060913;
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            color: #fff;
+            font-family: var(--font-main);
+        }
+
+        #landscape-warning.active {
+            display: flex;
+        }
+
+        .warning-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            animation: rotateDevice 2.2s infinite ease-in-out;
+        }
+
+        @keyframes rotateDevice {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-90deg); }
+        }
+
+        .warning-content h2 {
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+            color: var(--color-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .warning-content p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        /* --- MOBILE CONTROLS --- */
+        #mobile-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 160px;
+            pointer-events: none;
+            z-index: 130;
+            display: none;
+        }
+
+        #joystick-zone {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            width: 100px;
+            height: 100px;
+            pointer-events: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #joystick-ring {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+        }
+
+        #joystick-knob {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--color-cyan) 0%, #00b2df 100%);
+            position: absolute;
+            top: calc(50% - 21px);
+            left: calc(50% - 21px);
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
+            transition: transform 0.05s ease;
+        }
+
+        #mobile-actions {
+            position: absolute;
+            bottom: 35px;
+            right: 40px;
+            pointer-events: auto;
+        }
+
+        .mobile-action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-family: var(--font-main);
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            padding: 14px 28px;
+            border-radius: 30px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            cursor: pointer;
+            outline: none;
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .mobile-action-btn:active {
+            background: rgba(0, 242, 254, 0.2);
+            border-color: var(--color-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+            transform: scale(0.95);
+        }
+
+        /* --- DIFFICULTY SELECTION CSS --- */
+        .difficulty-panel {
+            margin: 16px 0 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .difficulty-panel h3 {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 8px;
+        }
+
+        .diff-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 6px 14px;
+            color: var(--text-secondary);
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .diff-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .diff-btn.active {
+            background: rgba(0, 242, 254, 0.15);
+            border-color: var(--color-cyan);
+            color: var(--color-cyan);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.25);
+        }
+
+        /* --- BALANZA GAME --- */
+        .scale-game {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .scale-beam-container {
+            width: 100%;
+            height: 130px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .scale-beam-pivot {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 24px solid #475569;
+            z-index: 5;
+        }
+
+        .scale-beam {
+            position: absolute;
+            bottom: 35px;
+            left: calc(50% - 130px);
+            width: 260px;
+            height: 6px;
+            background: #64748b;
+            border-radius: 3px;
+            transform-origin: center center;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid transparent;
+        }
+
+        .scale-plate {
+            position: absolute;
+            top: 6px;
+            width: 80px;
+            height: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-origin: top center;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .left-plate {
+            left: -15px;
+        }
+
+        .right-plate {
+            right: -15px;
+        }
+
+        .plate-base {
+            width: 80px;
+            height: 4px;
+            background: #94a3b8;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .plate-base::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 8px;
+            width: 2px;
+            height: 20px;
+            background: #94a3b8;
+            transform: rotate(-15deg);
+            transform-origin: bottom center;
+        }
+
+        .plate-base::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: 8px;
+            width: 2px;
+            height: 20px;
+            background: #94a3b8;
+            transform: rotate(15deg);
+            transform-origin: bottom center;
+        }
+
+        .plate-load {
+            margin-top: 8px;
+            background: rgba(8, 12, 28, 0.95);
+            border: 1px solid var(--color-cyan);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.15);
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .right-plate .plate-load {
+            border-color: var(--color-magenta);
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.15);
+        }
+
+        .slider-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .slider-container label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .slider-container label span {
+            color: #fff;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .slider-container input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            pointer-events: auto;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--color-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.8);
+        }
+
+        /* --- SHAPE GAME --- */
+        .shape-game {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .shape-canvas {
+            width: 100%;
+            height: 130px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .shape-canvas svg {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .sliders-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* --- SORT GAME --- */
+        .sort-game {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .sort-instruction {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .sort-cards-container, .sort-slots-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            min-height: 50px;
+            padding: 5px;
+            align-items: center;
+        }
+
+        .sort-slots-container {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .sort-card {
+            background: rgba(8, 12, 28, 0.85);
+            border: 1px solid var(--color-cyan);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+            border-radius: 8px;
+            width: 48px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 1rem;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            user-select: none;
+        }
+
+        .sort-card:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .sort-card.placed {
+            opacity: 0.3;
+            pointer-events: none;
+            transform: scale(0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+
+        .sort-slot {
+            width: 48px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--color-cyan);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .sort-slot.filled {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: var(--color-cyan);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        /* --- MOBILE TAP INTERACTION PROMPT --- */
+        .prompt-mobile-tap {
+            display: none;
+            color: var(--color-cyan);
+            font-size: 0.95rem;
+            font-weight: 800;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+            margin-left: 8px;
+            animation: heartbeat 1.5s infinite ease-in-out;
+        }
+
+        /* Responsive Mobile Layouts (Landscape & Portrait) */
+        @media (max-width: 850px) {
+            .interact-key {
+                display: none !important;
+            }
+            .prompt-text {
+                display: none !important;
+            }
+            .prompt-mobile-tap {
+                display: inline-block !important;
+            }
+            .prompt-content {
+                padding: 14px 28px !important;
+                border-radius: 40px !important;
+                background: rgba(8, 12, 28, 0.95) !important;
+                border-width: 2px !important;
+                pointer-events: auto !important;
+                cursor: pointer;
+                box-shadow: 0 0 25px rgba(0, 242, 254, 0.5) !important;
+            }
+        }
+
+        @media (max-width: 850px) and (orientation: landscape) {
+            #hud {
+                padding: 10px !important;
+            }
+            .hud-panel {
+                padding: 10px 14px !important;
+                border-radius: 12px !important;
+                max-width: 200px !important;
+            }
+            .panel-header {
+                font-size: 0.75rem !important;
+                margin-bottom: 6px !important;
+            }
+            .quest-text {
+                font-size: 0.75rem !important;
+            }
+            .lives-container {
+                gap: 5px !important;
+            }
+            .heart {
+                font-size: 1.1rem !important;
+            }
+            .key-slot {
+                padding: 4px 6px !important;
+                gap: 4px !important;
+                font-size: 0.7rem !important;
+            }
+            .key-icon {
+                font-size: 0.9rem !important;
+            }
+            .hud-controls-helper {
+                display: none !important;
+            }
+            #audio-settings {
+                bottom: 12px !important;
+                left: 12px !important;
+                padding: 6px 10px !important;
+            }
+            .audio-btn {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 0.9rem !important;
+            }
+            #cam-toggle {
+                bottom: 12px !important;
+                padding: 6px 12px !important;
+                font-size: 0.8rem !important;
+            }
+        }
+
         /* --- MATH MODAL --- */
         .modal-content {
             width: 90%;
@@ -1020,6 +1563,15 @@
                     </ul>
                 </div>
                 
+                <div class="difficulty-panel">
+                    <h3>Dificultad de la Misión</h3>
+                    <div class="difficulty-selector">
+                        <button type="button" class="diff-btn" data-diff="easy">Fácil</button>
+                        <button type="button" class="diff-btn active" data-diff="normal">Medio</button>
+                        <button type="button" class="diff-btn" data-diff="hard">Difícil</button>
+                    </div>
+                </div>
+                
                 <button id="start-btn" class="glow-button hidden">Entrar al Nexo</button>
             </div>
         </div>
@@ -1076,9 +1628,10 @@
 
         <!-- Interaction Tooltip -->
         <div id="interact-prompt" class="hidden">
-            <div class="prompt-content">
+            <div class="prompt-content" id="interact-prompt-tap">
                 <span class="interact-key">E</span>
                 <span class="prompt-text">Decodificar Monolito</span>
+                <span class="prompt-mobile-tap">👆 Toca aquí</span>
             </div>
         </div>
 
@@ -1094,10 +1647,11 @@
             </div>
         </div>
 
-        <!-- Audio Settings (Bottom Left) -->
+        <!-- Audio & Screen Settings (Bottom Left) -->
         <div id="audio-settings" class="glass-panel">
             <button id="btn-toggle-music" class="audio-btn" title="Música On/Off">🎵</button>
             <button id="btn-toggle-sfx" class="audio-btn" title="Efectos On/Off">🔊</button>
+            <button id="btn-toggle-fullscreen" class="audio-btn" title="Pantalla Completa">📺</button>
         </div>
 
         <!-- Math Question Modal -->
@@ -1121,6 +1675,71 @@
                     <div id="input-container-choice" class="input-container hidden">
                         <div class="choice-grid" id="math-choices-grid">
                             <!-- Dynamically generated choice buttons go here -->
+                        </div>
+                    </div>
+
+                    <!-- 3. BALANZA (Scale) container -->
+                    <div id="input-container-scale" class="input-container hidden">
+                        <div class="scale-game">
+                            <div class="scale-beam-container">
+                                <div class="scale-beam-pivot"></div>
+                                <div class="scale-beam" id="scale-beam">
+                                    <div class="scale-plate left-plate">
+                                        <div class="plate-base"></div>
+                                        <div class="plate-load" id="scale-left-load">5x + 3</div>
+                                    </div>
+                                    <div class="scale-plate right-plate">
+                                        <div class="plate-base"></div>
+                                        <div class="plate-load" id="scale-right-load">23</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slider-container">
+                                <label for="scale-x-slider">Ajusta el valor de X: <span id="scale-x-value">1</span></label>
+                                <input type="range" id="scale-x-slider" min="1" max="10" value="1" step="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. SHAPE BUILDER (Geometry Slider) container -->
+                    <div id="input-container-shape" class="input-container hidden">
+                        <div class="shape-game">
+                            <div style="display:flex;justify-content:center;gap:20px;margin-bottom:6px">
+                                <span style="color:var(--text-secondary);font-size:0.85rem;font-weight:600">Área objetivo: <span id="shape-target-area" style="color:var(--color-gold);font-size:1.1rem">24</span></span>
+                                <span style="color:var(--text-secondary);font-size:0.85rem;font-weight:600">Tu área: <span id="shape-current-area" style="color:var(--color-cyan);font-size:1.1rem">80</span></span>
+                            </div>
+                            <div class="shape-canvas">
+                                <svg id="shape-svg" width="200" height="120" viewBox="0 0 200 120">
+                                    <rect id="svg-rect" x="30" y="20" width="140" height="80" fill="rgba(0, 242, 254, 0.2)" stroke="var(--color-cyan)" stroke-width="3"></rect>
+                                    <text id="svg-text-width" x="100" y="12" fill="#fff" font-size="12" font-weight="600" text-anchor="middle">Base: 10</text>
+                                    <text id="svg-text-height" x="18" y="65" fill="#fff" font-size="12" font-weight="600" text-anchor="end">Altura: 8</text>
+                                    <text id="svg-text-area" x="100" y="114" fill="var(--color-cyan)" font-size="13" font-weight="bold" text-anchor="middle">Área: 80</text>
+                                </svg>
+                            </div>
+                            <div class="sliders-grid">
+                                <div class="slider-container">
+                                    <label for="shape-w-slider">Base: <span id="shape-w-value">10</span></label>
+                                    <input type="range" id="shape-w-slider" min="2" max="14" value="10" step="1">
+                                </div>
+                                <div class="slider-container">
+                                    <label for="shape-h-slider">Altura: <span id="shape-h-value">8</span></label>
+                                    <input type="range" id="shape-h-slider" min="2" max="12" value="8" step="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. SEQUENCE SORTER (Ordenamiento) container -->
+                    <div id="input-container-sort" class="input-container hidden">
+                        <div class="sort-game">
+                            <div class="sort-instruction">Selecciona los números en orden de menor a mayor:</div>
+                            <div class="sort-cards-container" id="sort-cards-container">
+                                <!-- Cards go here -->
+                            </div>
+                            <div class="sort-slots-container" id="sort-slots-container">
+                                <!-- Slots go here -->
+                            </div>
+                            <button id="sort-reset-btn" class="glow-button font-small" style="background: rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); box-shadow:none; margin-top:5px; height: 32px; padding: 4px 12px;">Reiniciar Orden</button>
                         </div>
                     </div>
 
@@ -1165,6 +1784,27 @@
                 </div>
                 <p class="game-over-message">El dron ha sufrido daños críticos y la conexión dimensional se ha perdido.</p>
                 <button id="retry-btn" class="glow-button retry-button">Reiniciar Dron</button>
+            </div>
+        </div>
+
+        <!-- Mobile Controls Overlay -->
+        <div id="mobile-controls">
+            <div id="joystick-zone">
+                <div id="joystick-ring">
+                    <div id="joystick-knob"></div>
+                </div>
+            </div>
+            <div id="mobile-actions">
+                <button type="button" id="btn-mobile-jump" class="mobile-action-btn">SALTAR</button>
+            </div>
+        </div>
+
+        <!-- Rotate Device Screen (Landscape Warning) -->
+        <div id="landscape-warning">
+            <div class="warning-content">
+                <div class="warning-icon">📱🔄</div>
+                <h2>Gira tu dispositivo</h2>
+                <p>Por favor, coloca tu teléfono en posición horizontal (paisaje) para poder pilotar el dron y decodificar los monolitos.</p>
             </div>
         </div>
         
@@ -1449,91 +2089,196 @@
                 ];
             }
 
-            generateQuestion(category, level) {
+            generateQuestion(category, level, difficulty = 'normal') {
                 switch (category) {
-                    case 'arithmetic': return this.generateArithmetic(level);
-                    case 'algebra': return this.generateAlgebra(level);
-                    case 'geometry': return this.generateGeometry(level);
-                    default: return this.generateArithmetic(0);
+                    case 'arithmetic': return this.generateArithmetic(level, difficulty);
+                    case 'algebra': return this.generateAlgebra(level, difficulty);
+                    case 'geometry': return this.generateGeometry(level, difficulty);
+                    default: return this.generateArithmetic(0, 'normal');
                 }
             }
 
-            generateArithmetic(level) {
-                let text = "";
-                let answer = 0;
-                let type = 'input';
-                
-                if (level === 0) {
-                    const a = Math.floor(Math.random() * 50) + 10;
-                    const b = Math.floor(Math.random() * 40) + 5;
-                    if (Math.random() > 0.5) {
-                        text = `¿Cuánto es ${a} + ${b}?`;
-                        answer = a + b;
-                    } else {
-                        text = `¿Cuánto es ${a} - ${b}?`;
-                        answer = a - b;
-                    }
-                } else if (level === 1) {
-                    const a = Math.floor(Math.random() * 12) + 4;
-                    const b = Math.floor(Math.random() * 11) + 3;
-                    const c = Math.floor(Math.random() * 20) + 5;
-                    if (Math.random() > 0.5) {
-                        text = `¿Cuánto es ${a} &times; ${b} + ${c}?`;
-                        answer = (a * b) + c;
-                    } else {
-                        text = `¿Cuánto es ${a} &times; ${b} - ${c}?`;
-                        answer = (a * b) - c;
-                    }
-                } else {
-                    const divisor = Math.floor(Math.random() * 8) + 3;
-                    const answerMultiplier = Math.floor(Math.random() * 12) + 4;
-                    const dividend = divisor * answerMultiplier;
-                    const extra = Math.floor(Math.random() * 15) + 2;
-                    text = `Calcula: (${dividend} &divide; ${divisor}) + ${extra}`;
-                    answer = answerMultiplier + extra;
-                }
-                return { category: 'Aritmética', text: text, type: type, answer: answer.toString() };
-            }
-
-            generateAlgebra(level) {
+            generateArithmetic(level, difficulty) {
                 let text = "";
                 let answer = "";
                 let type = 'input';
                 
-                if (level === 0) {
-                    const start = Math.floor(Math.random() * 10) + 2;
-                    const step = Math.floor(Math.random() * 6) + 3;
-                    const seq = [start, start + step, start + 2 * step, start + 3 * step];
-                    text = `Completa la secuencia: ${seq.join(', ')},  __?`;
-                    answer = (start + 4 * step).toString();
-                } else if (level === 1) {
-                    const x = Math.floor(Math.random() * 8) + 3;
-                    const a = Math.floor(Math.random() * 5) + 2;
-                    const b = Math.floor(Math.random() * 15) + 1;
-                    const c = (a * x) + b;
-                    text = `Resuelve para X:  ${a}x + ${b} = ${c}`;
-                    answer = x.toString();
-                } else {
-                    if (Math.random() > 0.5) {
-                        const start = Math.floor(Math.random() * 3) + 2;
-                        const ratio = Math.random() > 0.5 ? 2 : 3;
-                        const seq = [start, start * ratio, start * ratio * ratio, start * ratio * ratio * ratio];
-                        text = `Halla el término siguiente en la progresión: ${seq.join(', ')},  __?`;
-                        answer = (start * Math.pow(ratio, 4)).toString();
-                    } else {
-                        const squares = [];
-                        const startNum = Math.floor(Math.random() * 4) + 1;
-                        for (let i = 0; i < 4; i++) {
-                            squares.push(Math.pow(startNum + i, 2));
+                if (level === 1) {
+                    // Sorting game: numbers ordered from smallest to largest
+                    const count = difficulty === 'easy' ? 4 : difficulty === 'normal' ? 4 : 5;
+                    const numbers = [];
+                    const maxVal = difficulty === 'easy' ? 25 : difficulty === 'normal' ? 60 : 150;
+                    
+                    while (numbers.length < count) {
+                        let num = Math.floor(Math.random() * maxVal) + 1;
+                        if (difficulty !== 'easy' && Math.random() > 0.4) {
+                            num = -Math.floor(Math.random() * (maxVal / 2));
                         }
-                        text = `Completa el patrón cuadrático: ${squares.join(', ')},  __?`;
-                        answer = Math.pow(startNum + 4, 2).toString();
+                        if (!numbers.includes(num)) {
+                            numbers.push(num);
+                        }
+                    }
+                    
+                    const sorted = [...numbers].sort((a, b) => a - b);
+                    return {
+                        category: 'Aritmética Interactiva',
+                        text: 'Línea Numérica: Ordena las tarjetas flotantes de menor a mayor para decodificar la señal del nexo.',
+                        type: 'sort',
+                        numbers: numbers,
+                        answer: sorted.join(',')
+                    };
+                }
+
+                // Level 0 and 2 are standard text inputs scaled by difficulty
+                if (level === 0) {
+                    let a = 10, b = 5;
+                    if (difficulty === 'easy') {
+                        a = Math.floor(Math.random() * 15) + 5;
+                        b = Math.floor(Math.random() * 10) + 1;
+                    } else if (difficulty === 'normal') {
+                        a = Math.floor(Math.random() * 50) + 10;
+                        b = Math.floor(Math.random() * 40) + 5;
+                    } else {
+                        a = Math.floor(Math.random() * 180) + 40;
+                        b = Math.floor(Math.random() * 120) + 15;
+                    }
+                    
+                    if (Math.random() > 0.5) {
+                        text = `¿Cuánto es ${a} + ${b}?`;
+                        answer = (a + b).toString();
+                    } else {
+                        text = `¿Cuánto es ${a} - ${b}?`;
+                        answer = (a - b).toString();
+                    }
+                } else {
+                    // Level 2 division & multiplication steps
+                    let a = 5, b = 4, c = 10;
+                    if (difficulty === 'easy') {
+                        a = Math.floor(Math.random() * 6) + 2;
+                        b = Math.floor(Math.random() * 5) + 2;
+                        text = `¿Cuánto es ${a} &times; ${b}?`;
+                        answer = (a * b).toString();
+                    } else if (difficulty === 'normal') {
+                        a = Math.floor(Math.random() * 10) + 3;
+                        b = Math.floor(Math.random() * 8) + 3;
+                        c = Math.floor(Math.random() * 15) + 2;
+                        text = `Calcula: (${a} &times; ${b}) + ${c}`;
+                        answer = (a * b + c).toString();
+                    } else {
+                        const divisor = Math.floor(Math.random() * 6) + 4; // 4-9
+                        const multiplier = Math.floor(Math.random() * 10) + 6; // 6-15
+                        const dividend = divisor * multiplier;
+                        const extra = Math.floor(Math.random() * 40) + 10;
+                        text = `Calcula: (${dividend} &divide; ${divisor}) &times; 3 - ${extra}`;
+                        answer = (multiplier * 3 - extra).toString();
                     }
                 }
+                
+                return { category: 'Aritmética', text: text, type: type, answer: answer };
+            }
+
+            generateAlgebra(level, difficulty) {
+                let text = "";
+                let answer = "";
+                let type = 'input';
+                
+                if (level === 1) {
+                    // Algebraic Balancing Scale game (Ax + B = C)
+                    let a = 1, b = 0, x = 0, c = 0, formula = "";
+                    if (difficulty === 'easy') {
+                        x = Math.floor(Math.random() * 6) + 2; // 2-7
+                        b = Math.floor(Math.random() * 9) + 1; // 1-9
+                        c = x + b;
+                        formula = `x + ${b}`;
+                    } else if (difficulty === 'normal') {
+                        a = Math.floor(Math.random() * 3) + 2; // 2-4
+                        x = Math.floor(Math.random() * 5) + 2; // 2-6
+                        b = Math.floor(Math.random() * 8) + 1; // 1-8
+                        c = a * x + b;
+                        formula = `${a}x + ${b}`;
+                    } else {
+                        a = Math.floor(Math.random() * 3) + 3; // 3-5
+                        x = Math.floor(Math.random() * 6) + 3; // 3-8
+                        b = Math.floor(Math.random() * 12) + 2; // 2-13
+                        c = a * x - b;
+                        formula = `${a}x - ${b}`;
+                    }
+                    
+                    return {
+                        category: 'Álgebra Interactiva',
+                        text: 'Balanza del Nexo: Ajusta el valor de X usando el control deslizante para que el peso de la balanza esté perfectamente equilibrado a ambos lados.',
+                        type: 'scale',
+                        leftFormula: formula,
+                        rightFormula: c.toString(),
+                        correctX: x,
+                        answer: x.toString()
+                    };
+                }
+
+                if (level === 0) {
+                    // Sequences
+                    const start = Math.floor(Math.random() * 8) + 2;
+                    const step = Math.floor(Math.random() * 5) + 2;
+                    let seq = [start, start + step, start + 2 * step, start + 3 * step];
+                    
+                    if (difficulty === 'hard') {
+                        // Alternate step sequence or square sequence
+                        seq = [1, 4, 9, 16];
+                        const offset = Math.floor(Math.random() * 4) + 1;
+                        const hardSeq = [];
+                        for(let i=0; i<4; i++) {
+                            hardSeq.push((offset + i) * (offset + i));
+                        }
+                        text = `Halla el número que sigue en la secuencia: ${hardSeq.join(', ')},  __?`;
+                        answer = ((offset + 4) * (offset + 4)).toString();
+                    } else {
+                        text = `Completa la secuencia: ${seq.join(', ')},  __?`;
+                        answer = (start + 4 * step).toString();
+                    }
+                } else {
+                    // Equations (level 2)
+                    const x = Math.floor(Math.random() * 7) + 3;
+                    const a = Math.floor(Math.random() * 4) + 2;
+                    const b = Math.floor(Math.random() * 12) + 1;
+                    
+                    if (difficulty === 'easy') {
+                        text = `Resuelve para x:  x - ${b} = ${x - b}`;
+                        answer = x.toString();
+                    } else {
+                        const c = (a * x) + b;
+                        text = `Resuelve la ecuación para x:  ${a}x + ${b} = ${c}`;
+                        answer = x.toString();
+                    }
+                }
+                
                 return { category: 'Álgebra', text: text, type: type, answer: answer };
             }
 
-            generateGeometry(level) {
+            generateGeometry(level, difficulty) {
+                if (level === 1) {
+                    // Rectangle Builder Game
+                    let targetArea = 24;
+                    if (difficulty === 'easy') {
+                        const areas = [12, 16, 20];
+                        targetArea = areas[Math.floor(Math.random() * areas.length)];
+                    } else if (difficulty === 'normal') {
+                        const areas = [24, 30, 36];
+                        targetArea = areas[Math.floor(Math.random() * areas.length)];
+                    } else {
+                        const areas = [45, 48, 64, 72];
+                        targetArea = areas[Math.floor(Math.random() * areas.length)];
+                    }
+                    
+                    return {
+                        category: 'Geometría Interactiva',
+                        text: 'Constructor de Formas: Desplaza los controles de Base y Altura para construir un rectángulo que tenga exactamente el Área objetivo.',
+                        type: 'shape',
+                        targetArea: targetArea,
+                        answer: targetArea.toString(),
+                    };
+                }
+
+                // Level 0 & 2 pick from pre-defined lists
                 const index = Math.min(level, this.geometryQuestions.length - 1);
                 let q = this.geometryQuestions[index];
                 if (level >= 2) {
@@ -1573,6 +2318,11 @@
                     ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false,
                     space: false
                 };
+                
+                // Mobile virtual joystick input state
+                this.mobileMoveVector = new THREE.Vector2(0, 0);
+                this.joyActive = false;
+                this.mobileJumpActive = false;
                 
                 this.mesh = this.createDroneMesh();
                 this.scene.add(this.mesh);
@@ -1677,8 +2427,17 @@
                 if (left) moveVector.x -= 1;
                 if (right) moveVector.x += 1;
 
+                // Merge mobile virtual joystick values if active
+                if (this.joyActive) {
+                    moveVector.x = this.mobileMoveVector.x;
+                    moveVector.z = this.mobileMoveVector.y; // joy Y maps to global Z
+                }
+                
                 if (moveVector.lengthSq() > 0) {
-                    moveVector.normalize();
+                    // Limit joystick or combined keyboard movement to 1.0 length
+                    if (moveVector.lengthSq() > 1.0) {
+                        moveVector.normalize();
+                    }
                     const camDir = new THREE.Vector3();
                     camera.getWorldDirection(camDir);
                     camDir.y = 0;
@@ -1688,7 +2447,11 @@
                     const actualMove = new THREE.Vector3()
                         .addScaledVector(camDir, -moveVector.z)
                         .addScaledVector(camRight, moveVector.x);
-                    actualMove.normalize();
+                    
+                    // Don't normalize actualMove if it is less than 1.0 (allows analog movement)
+                    if (actualMove.lengthSq() > 1.0) {
+                        actualMove.normalize();
+                    }
                     
                     this.velocity.x = actualMove.x * this.speed;
                     this.velocity.z = actualMove.z * this.speed;
@@ -1705,9 +2468,8 @@
                     this.mesh.rotation.z *= 0.85;
                     this.mesh.rotation.x *= 0.85;
                 }
-
                 this.velocity.y += this.gravity;
-                if (this.keys.space && this.isGrounded) {
+                if ((this.keys.space || this.mobileJumpActive) && this.isGrounded) {
                     this.velocity.y = this.jumpForce;
                     this.isGrounded = false;
                     gameAudio.playJump();
@@ -2449,9 +3211,20 @@
                 this.selectedChoice = null;
                 this.inventory = { arithmetic: false, algebra: false, geometry: false };
 
+                // Mobile detection
+                this.isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || ('ontouchstart' in window);
+                
+                // Difficulty (default normal)
+                this.difficulty = 'normal';
+                
+                // Sort game state
+                this.sortOrder = [];
+
                 this.initThree();
                 this.initModules();
                 this.setupUIListeners();
+                this.setupMobileControls();
+                this.checkOrientationWarning();
                 this.simulateLoading();
             }
 
@@ -2524,10 +3297,44 @@
                 setTimeout(() => {
                     document.getElementById('loading-screen').classList.add('hidden');
                     document.getElementById('hud').classList.remove('hidden');
+                    
+                    // Show mobile controls if on mobile
+                    if (this.isMobile) {
+                        document.getElementById('mobile-controls').style.display = 'block';
+                    }
                 }, 500);
+
+                // Auto-fullscreen on mobile
+                if (this.isMobile) {
+                    this.requestFullscreen();
+                }
 
                 this.startTime = Date.now();
                 this.animate();
+            }
+
+            requestFullscreen() {
+                const el = document.documentElement;
+                try {
+                    if (el.requestFullscreen) el.requestFullscreen();
+                    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+                    else if (el.msRequestFullscreen) el.msRequestFullscreen();
+                } catch(e) { /* silently fail on older browsers */ }
+                
+                // Lock to landscape if supported
+                try {
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(() => {});
+                    }
+                } catch(e) {}
+            }
+
+            exitFullscreen() {
+                try {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                    else if (document.msExitFullscreen) document.msExitFullscreen();
+                } catch(e) {}
             }
 
             setupUIListeners() {
@@ -2572,6 +3379,126 @@
                         btn.classList.remove('muted');
                     }
                 });
+
+                // Fullscreen toggle button
+                document.getElementById('btn-toggle-fullscreen').addEventListener('click', () => {
+                    if (document.fullscreenElement || document.webkitFullscreenElement) {
+                        this.exitFullscreen();
+                    } else {
+                        this.requestFullscreen();
+                    }
+                });
+
+                // Difficulty selector buttons
+                document.querySelectorAll('.diff-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.difficulty = btn.dataset.diff;
+                    });
+                });
+
+                // Mobile tap on interact prompt to interact
+                document.getElementById('interact-prompt-tap').addEventListener('click', () => {
+                    if (this.state === 'playing') this.attemptInteraction();
+                });
+
+                // Sort game reset button
+                document.getElementById('sort-reset-btn').addEventListener('click', () => {
+                    this.resetSortGame();
+                });
+
+                // Scale game slider
+                document.getElementById('scale-x-slider').addEventListener('input', (e) => {
+                    this.updateScaleGame(parseInt(e.target.value));
+                });
+
+                // Shape game sliders
+                document.getElementById('shape-w-slider').addEventListener('input', () => this.updateShapeGame());
+                document.getElementById('shape-h-slider').addEventListener('input', () => this.updateShapeGame());
+            }
+
+            setupMobileControls() {
+                if (!this.isMobile) return;
+
+                const knob = document.getElementById('joystick-knob');
+                const ring = document.getElementById('joystick-ring');
+                const jumpBtn = document.getElementById('btn-mobile-jump');
+
+                let joyTouchId = null;
+                const joyRadius = 24; // max pixel displacement
+
+                const getJoyCenter = () => {
+                    const rect = ring.getBoundingClientRect();
+                    return { cx: rect.left + rect.width / 2, cy: rect.top + rect.height / 2 };
+                };
+
+                ring.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.changedTouches[0];
+                    joyTouchId = touch.identifier;
+                    this.player.joyActive = true;
+                }, { passive: false });
+
+                ring.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    for (const touch of e.changedTouches) {
+                        if (touch.identifier === joyTouchId) {
+                            const { cx, cy } = getJoyCenter();
+                            let dx = touch.clientX - cx;
+                            let dy = touch.clientY - cy;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist > joyRadius) {
+                                dx = (dx / dist) * joyRadius;
+                                dy = (dy / dist) * joyRadius;
+                            }
+                            knob.style.transform = `translate(${dx}px, ${dy}px)`;
+                            // Normalize to -1..1
+                            this.player.mobileMoveVector.set(dx / joyRadius, dy / joyRadius);
+                        }
+                    }
+                }, { passive: false });
+
+                const resetJoy = (e) => {
+                    for (const touch of e.changedTouches) {
+                        if (touch.identifier === joyTouchId) {
+                            joyTouchId = null;
+                            knob.style.transform = 'translate(0, 0)';
+                            this.player.mobileMoveVector.set(0, 0);
+                            this.player.joyActive = false;
+                        }
+                    }
+                };
+                ring.addEventListener('touchend', resetJoy);
+                ring.addEventListener('touchcancel', resetJoy);
+
+                // Jump button
+                jumpBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.player.mobileJumpActive = true;
+                }, { passive: false });
+                jumpBtn.addEventListener('touchend', () => {
+                    this.player.mobileJumpActive = false;
+                });
+                jumpBtn.addEventListener('touchcancel', () => {
+                    this.player.mobileJumpActive = false;
+                });
+            }
+
+            checkOrientationWarning() {
+                if (!this.isMobile) return;
+                
+                const warning = document.getElementById('landscape-warning');
+                const check = () => {
+                    if (window.innerHeight > window.innerWidth) {
+                        warning.classList.add('active');
+                    } else {
+                        warning.classList.remove('active');
+                    }
+                };
+                check();
+                window.addEventListener('resize', check);
+                window.addEventListener('orientationchange', () => setTimeout(check, 200));
             }
 
             attemptInteraction() {
@@ -2636,18 +3563,23 @@
 
                 const textContainer = document.getElementById('input-container-text');
                 const choiceContainer = document.getElementById('input-container-choice');
+                const scaleContainer = document.getElementById('input-container-scale');
+                const shapeContainer = document.getElementById('input-container-shape');
+                const sortContainer = document.getElementById('input-container-sort');
+
+                textContainer.classList.add('hidden');
+                choiceContainer.classList.add('hidden');
+                scaleContainer.classList.add('hidden');
+                shapeContainer.classList.add('hidden');
+                sortContainer.classList.add('hidden');
 
                 if (q.type === 'input') {
                     textContainer.classList.remove('hidden');
-                    choiceContainer.classList.add('hidden');
                     setTimeout(() => document.getElementById('math-answer-input').focus(), 150);
-                } else {
-                    textContainer.classList.add('hidden');
+                } else if (q.type === 'choice') {
                     choiceContainer.classList.remove('hidden');
-
                     const grid = document.getElementById('math-choices-grid');
                     grid.innerHTML = '';
-                    
                     q.choices.forEach(choice => {
                         const btn = document.createElement('button');
                         btn.className = 'choice-btn';
@@ -2659,6 +3591,27 @@
                         });
                         grid.appendChild(btn);
                     });
+                } else if (q.type === 'scale') {
+                    scaleContainer.classList.remove('hidden');
+                    document.getElementById('scale-left-load').innerText = q.leftFormula;
+                    document.getElementById('scale-right-load').innerText = q.rightFormula;
+                    const slider = document.getElementById('scale-x-slider');
+                    slider.value = q.correctX;
+                    document.getElementById('scale-x-value').innerText = q.correctX;
+                    this.updateScaleGame(q.correctX);
+                } else if (q.type === 'shape') {
+                    shapeContainer.classList.remove('hidden');
+                    document.getElementById('shape-target-area').innerText = q.targetArea;
+                    const wSlider = document.getElementById('shape-w-slider');
+                    const hSlider = document.getElementById('shape-h-slider');
+                    wSlider.value = 10;
+                    hSlider.value = 8;
+                    document.getElementById('shape-w-value').innerText = '10';
+                    document.getElementById('shape-h-value').innerText = '8';
+                    this.updateShapeGame();
+                } else if (q.type === 'sort') {
+                    sortContainer.classList.remove('hidden');
+                    this.setupSortGame(q.numbers);
                 }
             }
 
@@ -2684,10 +3637,24 @@
                 if (!this.activeQuestion || this.isProcessingAnswer) return;
 
                 let userAnswer = "";
-                if (this.activeQuestion.type === 'input') {
+                const q = this.activeQuestion;
+
+                if (q.type === 'input') {
                     userAnswer = document.getElementById('math-answer-input').value.trim();
-                } else {
+                } else if (q.type === 'choice') {
                     userAnswer = this.selectedChoice ? this.selectedChoice.trim() : "";
+                } else if (q.type === 'scale') {
+                    userAnswer = parseInt(document.getElementById('scale-x-slider').value).toString();
+                } else if (q.type === 'shape') {
+                    const w = parseInt(document.getElementById('shape-w-slider').value);
+                    const h = parseInt(document.getElementById('shape-h-slider').value);
+                    userAnswer = (w * h).toString();
+                } else if (q.type === 'sort') {
+                    if (this.sortOrder.length < q.numbers.length) {
+                        this.showFeedback("Coloca todos los números en orden antes de enviar.", false);
+                        return;
+                    }
+                    userAnswer = this.sortOrder.join(',');
                 }
 
                 if (userAnswer === "") {
@@ -2701,7 +3668,7 @@
                 submitBtn.style.opacity = '0.5';
 
                 this.attempts++;
-                const isCorrect = (userAnswer.toLowerCase() === this.activeQuestion.answer.toLowerCase());
+                const isCorrect = (userAnswer.toLowerCase() === q.answer.toLowerCase());
 
                 if (isCorrect) {
                     this.correctAnswers++;
@@ -2727,8 +3694,6 @@
                             this.closeMathModal();
                             this.deductLife();
                             if (this.lives > 0) {
-                                // Respawn silencioso: NO llama onRespawnCallback
-                                // para evitar que triggerRespawnEffect() quite una segunda vida
                                 gameAudio.playRespawn();
                                 this.player.position.set(0, 6, 5);
                                 this.player.velocity.set(0, 0, 0);
@@ -2746,11 +3711,100 @@
                         this.showFeedback(`Firma de energía errónea. Quedan ${remaining} intentos.`, false);
                         gameAudio.playWrong();
 
-                        // Permitir reintentar
                         this.isProcessingAnswer = false;
                         submitBtn.disabled = false;
                         submitBtn.style.opacity = '1.0';
                     }
+                }
+            }
+
+            updateScaleGame(xVal) {
+                document.getElementById('scale-x-value').innerText = xVal;
+                const beam = document.getElementById('scale-beam');
+                const leftLoad = parseInt(document.getElementById('scale-left-load').innerText.match(/\d+/)?.[0] || '1');
+                const rightVal = parseInt(document.getElementById('scale-right-load').innerText);
+                const leftVal = leftLoad * xVal;
+                const diff = leftVal - rightVal;
+                const tilt = Math.max(-15, Math.min(15, diff * 0.8));
+                beam.style.transform = `rotate(${-tilt}deg)`;
+            }
+
+            updateShapeGame() {
+                const w = parseInt(document.getElementById('shape-w-slider').value);
+                const h = parseInt(document.getElementById('shape-h-slider').value);
+                const area = w * h;
+                document.getElementById('shape-w-value').innerText = w;
+                document.getElementById('shape-h-value').innerText = h;
+                document.getElementById('shape-current-area').innerText = area;
+
+                const svgW = 200;
+                const svgH = 120;
+                const pad = 24;
+                const maxRectW = svgW - pad * 2;
+                const maxRectH = svgH - pad * 2 - 8;
+                const scaleW = maxRectW / 14;
+                const scaleH = maxRectH / 12;
+                const scale = Math.min(scaleW, scaleH);
+                const rectW = w * scale;
+                const rectH = h * scale;
+                const rectX = (svgW - rectW) / 2;
+                const rectY = (svgH - rectH) / 2 + 4;
+
+                const rect = document.getElementById('svg-rect');
+                rect.setAttribute('width', rectW);
+                rect.setAttribute('height', rectH);
+                rect.setAttribute('x', rectX);
+                rect.setAttribute('y', rectY);
+
+                document.getElementById('svg-text-width').setAttribute('x', svgW / 2);
+                document.getElementById('svg-text-width').setAttribute('y', rectY - 6);
+                document.getElementById('svg-text-width').textContent = `Base: ${w}`;
+                document.getElementById('svg-text-height').setAttribute('x', rectX - 6);
+                document.getElementById('svg-text-height').setAttribute('y', rectY + rectH / 2 + 4);
+                document.getElementById('svg-text-height').textContent = `Altura: ${h}`;
+                document.getElementById('svg-text-area').setAttribute('x', svgW / 2);
+                document.getElementById('svg-text-area').setAttribute('y', rectY + rectH + 14);
+                document.getElementById('svg-text-area').textContent = `Área: ${area}`;
+            }
+
+            setupSortGame(numbers) {
+                this.sortOrder = [];
+                const cardsContainer = document.getElementById('sort-cards-container');
+                const slotsContainer = document.getElementById('sort-slots-container');
+                cardsContainer.innerHTML = '';
+                slotsContainer.innerHTML = '';
+
+                const shuffled = [...numbers].sort(() => Math.random() - 0.5);
+
+                shuffled.forEach((num, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'sort-card';
+                    card.innerText = num;
+                    card.dataset.value = num;
+                    card.addEventListener('click', () => {
+                        if (card.classList.contains('placed')) return;
+                        card.classList.add('placed');
+                        this.sortOrder.push(num);
+                        const emptySlot = slotsContainer.querySelector('.sort-slot:not(.filled)');
+                        if (emptySlot) {
+                            emptySlot.innerText = num;
+                            emptySlot.classList.add('filled');
+                        }
+                    });
+                    cardsContainer.appendChild(card);
+                });
+
+                numbers.forEach(() => {
+                    const slot = document.createElement('div');
+                    slot.className = 'sort-slot';
+                    slotsContainer.appendChild(slot);
+                });
+            }
+
+            resetSortGame() {
+                const q = this.activeQuestion;
+                if (q && q.type === 'sort') {
+                    this.setupSortGame(q.numbers);
                 }
             }
 
@@ -3000,10 +4054,14 @@
                     if (nearest) {
                         tooltip.classList.remove('hidden');
                         const tooltipText = tooltip.querySelector('.prompt-text');
+                        const mobileTap = tooltip.querySelector('.prompt-mobile-tap');
                         if (nearest.id.startsWith('bridge_')) {
                             tooltipText.innerText = `Presiona E para activar Puente`;
                         } else {
                             tooltipText.innerText = `Presiona E para obtener Llave`;
+                        }
+                        if (this.isMobile && mobileTap) {
+                            mobileTap.innerText = `👆 Toca para ${nearest.id.startsWith('bridge_') ? 'activar Puente' : 'obtener Llave'}`;
                         }
                     } else {
                         tooltip.classList.add('hidden');
