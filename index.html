@@ -1,0 +1,2733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Treasure Quest - 3D Adventure</title>
+    <!-- Google Fonts: Outfit for futuristic, premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Load Three.js and OrbitControls globally from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        /* Math Treasure Quest - Styling System (Spatial.io Inspired) */
+        :root {
+            --bg-dark: #060913;
+            --glass-bg: rgba(10, 15, 30, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            
+            /* Neon glowing colors */
+            --color-cyan: #00f2fe;
+            --color-cyan-glow: rgba(0, 242, 254, 0.4);
+            --color-magenta: #ff007f;
+            --color-magenta-glow: rgba(255, 0, 127, 0.4);
+            --color-emerald: #10b981;
+            --color-emerald-glow: rgba(16, 185, 129, 0.4);
+            --color-gold: #f59e0b;
+            --color-gold-glow: rgba(245, 158, 11, 0.4);
+            
+            --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: var(--font-main);
+            color: var(--text-primary);
+        }
+
+        /* 3D Canvas container */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* UI Overlay container */
+        #ui-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none; /* Let clicks pass through to 3D canvas by default */
+        }
+
+        /* Enable pointer events on interactive UI elements */
+        .glass-panel, .glow-button, .key-slot, input, button, .close-btn {
+            pointer-events: auto;
+        }
+
+        /* --- Common UI elements --- */
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px) saturate(120%);
+            -webkit-backdrop-filter: blur(16px) saturate(120%);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .glow-button {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: #060913;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .glow-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 242, 254, 0.7);
+        }
+
+        .glow-button:active {
+            transform: translateY(1px);
+        }
+
+        .glow-button.hidden {
+            display: none !important;
+        }
+
+        .glow-button.font-small {
+            font-size: 0.95rem;
+            padding: 10px 20px;
+        }
+
+        /* Screens / Modal Overlays */
+        .overlay-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(4, 6, 12, 0.4);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .overlay-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .overlay-screen.hidden {
+            display: none !important;
+        }
+
+        /* --- LOADING SCREEN --- */
+        .loading-content {
+            width: 90%;
+            max-width: 480px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-container {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .glowing-orb {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, var(--color-cyan) 0%, rgba(0, 242, 254, 0) 70%);
+            opacity: 0.3;
+            filter: blur(10px);
+            animation: pulseOrb 4s infinite ease-in-out;
+        }
+
+        .loading-content h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .loading-content h1 span {
+            background: linear-gradient(90deg, var(--color-cyan), var(--color-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-cyan), #4facfe);
+            border-radius: 3px;
+            box-shadow: 0 0 8px var(--color-cyan);
+            transition: width 0.1s ease;
+        }
+
+        .loading-status {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .instructions-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 24px;
+        }
+
+        .instructions-panel h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .instructions-panel ul {
+            list-style: none;
+        }
+
+        /* FIX: Removing display: flex to prevent inline overlapping issues */
+        .instructions-panel li {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .key {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+            color: #fff;
+            min-width: 16px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        /* --- HUD LAYER --- */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: opacity 0.5s ease;
+        }
+
+        #hud.hidden {
+            opacity: 0;
+        }
+
+        .hud-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 16px 20px;
+        }
+
+        .panel-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        /* Left Panel - Missions */
+        .left-panel {
+            width: 280px;
+        }
+
+        .quest-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.4;
+            margin-bottom: 14px;
+        }
+
+        .progress-indicator {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            margin-right: 6px;
+            box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+            transition: all 0.3s ease;
+        }
+
+        .dot.completed {
+            background: var(--color-emerald);
+            box-shadow: 0 0 8px var(--color-emerald-glow);
+        }
+
+        .dot.active {
+            background: var(--color-cyan);
+            box-shadow: 0 0 8px var(--color-cyan-glow);
+            animation: pulseDot 1.5s infinite ease-in-out;
+        }
+
+        /* Center Panel - Lives */
+        .center-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 18px;
+        }
+
+        .lives-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .heart {
+            font-size: 1.4rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: heartbeat 1.5s infinite ease-in-out;
+            display: inline-block;
+            filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.4));
+        }
+
+        #heart-2 {
+            animation-delay: 0.2s;
+        }
+        #heart-3 {
+            animation-delay: 0.4s;
+        }
+
+        .heart.lost {
+            opacity: 0.2;
+            transform: scale(0.8);
+            filter: grayscale(100%) drop-shadow(0 0 0 transparent);
+            animation: none;
+        }
+
+        /* Right Panel - Keys Inventory */
+        .right-panel {
+            width: 320px;
+        }
+
+        .keys-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .key-slot {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 10px 4px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.4;
+            transform: scale(0.95);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .key-slot span {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .key-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .key-slot.acquired {
+            opacity: 1;
+            transform: scale(1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .key-slot.acquired span {
+            color: #fff;
+        }
+
+        .key-slot.acquired .key-icon {
+            transform: rotate(15deg);
+        }
+
+        .color-cyan {
+            color: var(--color-cyan);
+            box-shadow: inset 0 0 10px rgba(0, 242, 254, 0.2);
+            border: 1px solid var(--color-cyan);
+        }
+
+        .key-slot.acquired #slot-arithmetic .key-icon {
+            box-shadow: 0 0 15px var(--color-cyan-glow);
+        }
+
+        .color-magenta {
+            color: var(--color-magenta);
+            box-shadow: inset 0 0 10px rgba(255, 0, 127, 0.2);
+            border: 1px solid var(--color-magenta);
+        }
+
+        .key-slot.acquired #slot-algebra .key-icon {
+            box-shadow: 0 0 15px var(--color-magenta-glow);
+        }
+
+        .color-emerald {
+            color: var(--color-emerald);
+            box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--color-emerald);
+        }
+
+        .key-slot.acquired #slot-geometry .key-icon {
+            box-shadow: 0 0 15px var(--color-emerald-glow);
+        }
+
+        /* HUD Controls Help (Bottom Left) */
+        .hud-controls-helper {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            display: flex;
+            gap: 16px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(4px);
+        }
+
+        /* --- INTERACTION PROMPT --- */
+        #interact-prompt {
+            position: absolute;
+            left: 50%;
+            bottom: 12%;
+            transform: translateX(-50%);
+            z-index: 50;
+            animation: floatPrompt 2s infinite ease-in-out;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #interact-prompt.hidden {
+            opacity: 0;
+            transform: translate(-50%, 20px) scale(0.9);
+        }
+
+        .prompt-content {
+            background: rgba(6, 9, 19, 0.85);
+            border: 1px solid var(--color-cyan);
+            border-radius: 30px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+        }
+
+        .interact-key {
+            background: var(--color-cyan);
+            color: #060913;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 0.8rem;
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+        }
+
+        .prompt-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #fff;
+        }
+
+        /* --- MATH MODAL --- */
+        .modal-content {
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            position: relative;
+            animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .monolith-type {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-cyan);
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        .question-container {
+            margin-bottom: 24px;
+        }
+
+        .question-instruction {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        /* CRÍTICO: regla genérica de ocultamiento para los contenedores de input.
+           Sin esto, .classList.add('hidden') no surte efecto y ambos inputs
+           (texto numérico Y botones de opción) aparecen al mismo tiempo. */
+        .input-container.hidden {
+            display: none !important;
+        }
+
+        /* Inputs and grids */
+        .input-container {
+            margin-bottom: 24px;
+            min-height: 52px;
+        }
+
+        #math-answer-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-family: var(--font-main);
+            color: #fff;
+            font-size: 1.2rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #math-answer-input:focus {
+            border-color: var(--color-cyan);
+            background: rgba(0, 242, 254, 0.03);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+        }
+
+        /* Choice Buttons */
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .choice-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px;
+            font-family: var(--font-main);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .choice-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .choice-btn:active {
+            transform: translateY(1px);
+        }
+
+        .choice-btn.selected {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: var(--color-cyan);
+            color: var(--color-cyan);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        .feedback-msg {
+            min-height: 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 12px;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: all 0.3s ease;
+        }
+
+        .feedback-msg.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback-msg.correct {
+            color: var(--color-emerald);
+        }
+
+        .feedback-msg.incorrect {
+            color: var(--color-magenta);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* Shake Animation on Wrong Answer */
+        .shake {
+            animation: shakeAnim 0.4s ease-in-out;
+        }
+
+        /* --- VICTORY SCREEN --- */
+        .victory-content {
+            width: 90%;
+            max-width: 480px;
+            padding: 40px;
+            text-align: center;
+            animation: scaleUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--color-gold);
+            box-shadow: 0 8px 32px 0 rgba(245, 158, 11, 0.2);
+        }
+
+        .trophy-glow {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            animation: crownFloat 2s infinite ease-in-out;
+            filter: drop-shadow(0 0 15px var(--color-gold-glow));
+        }
+
+        .victory-content h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 14px;
+            background: linear-gradient(90deg, var(--color-gold), #ffe066);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .victory-message {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            margin-bottom: 34px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .victory-content .glow-button {
+            background: linear-gradient(135deg, var(--color-gold) 0%, #d97706 100%);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            width: 100%;
+        }
+
+        .victory-content .glow-button:hover {
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.7);
+        }
+
+        /* --- GAME OVER SCREEN --- */
+        .game-over-content {
+            width: 90%;
+            max-width: 450px;
+            padding: 40px;
+            text-align: center;
+            animation: scaleUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--color-magenta);
+            box-shadow: 0 8px 32px 0 rgba(255, 0, 127, 0.2);
+        }
+
+        .skull-glow {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            animation: crownFloat 2s infinite ease-in-out;
+            filter: drop-shadow(0 0 15px var(--color-magenta-glow));
+        }
+
+        .game-over-content h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 14px;
+            background: linear-gradient(90deg, var(--color-magenta), #ff80bf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .game-over-message {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .game-over-content .glow-button {
+            background: linear-gradient(135deg, var(--color-magenta) 0%, #b30059 100%);
+            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+            width: 100%;
+        }
+
+        .game-over-content .glow-button:hover {
+            box-shadow: 0 8px 25px rgba(255, 0, 127, 0.7);
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            30% { transform: scale(1.18); }
+            60% { transform: scale(1); }
+        }
+
+        @keyframes pulseOrb {
+            0%, 100% { opacity: 0.3; transform: translateX(-50%) scale(1); }
+            50% { opacity: 0.5; transform: translateX(-50%) scale(1.15); filter: blur(5px); }
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+        }
+
+        @keyframes floatPrompt {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -10px); }
+        }
+
+        @keyframes crownFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(5deg); }
+        }
+
+        @keyframes scaleUp {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-10px); }
+            30%, 60%, 90% { transform: translateX(10px); }
+        }
+
+        /* --- RESPONSIVE ADJUSTMENTS --- */
+        @media (max-width: 768px) {
+            #hud {
+                padding: 14px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .left-panel, .right-panel {
+                width: 100%;
+            }
+            .hud-controls-helper {
+                display: none;
+            }
+            .modal-content, .loading-content, .victory-content {
+                padding: 24px;
+            }
+            .choice-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 3D Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- UI Overlay Wrapper -->
+    <div id="ui-container">
+        
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="overlay-screen active">
+            <div class="glass-panel loading-content">
+                <div class="glowing-orb"></div>
+                <div class="logo-container">
+                    <h1>MATH TREASURE<br><span>QUEST</span></h1>
+                </div>
+                <p class="subtitle">Una aventura matemática tridimensional al estilo de Spatial.io</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="load-progress"></div>
+                </div>
+                <p class="loading-status" id="load-status">Inicializando motores 3D...</p>
+                
+                <div class="instructions-panel">
+                    <h3>Cómo jugar:</h3>
+                    <ul>
+                        <li><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span> o Flechas para desplazarte</li>
+                        <li><span class="key">Espacio</span> para saltar</li>
+                        <li><span class="key">Arrastrar Mouse</span> para orbitar la cámara</li>
+                        <li>Aproximarse a los <strong>Monolitos</strong> y presionar <span class="key">E</span> o hacer clic para interactuar</li>
+                    </ul>
+                </div>
+                
+                <button id="start-btn" class="glow-button hidden">Entrar al Nexo</button>
+            </div>
+        </div>
+
+        <!-- HUD Layer -->
+        <div id="hud" class="hidden">
+            <!-- Mission Tracker -->
+            <div class="hud-panel mission-panel left-panel">
+                <div class="panel-header">Misión Activa</div>
+                <div id="current-quest" class="quest-text">Explora el archipiélago y activa los Monolitos</div>
+                <div class="progress-indicator">
+                    <span class="dot" id="dot-arithmetic"></span> Aritmética
+                    <span class="dot" id="dot-algebra"></span> Álgebra
+                    <span class="dot" id="dot-geometry"></span> Geometría
+                </div>
+            </div>
+
+            <!-- Lives Tracker (Center) -->
+            <div class="hud-panel lives-panel center-panel">
+                <div class="panel-header">Energía del Dron</div>
+                <div id="lives-container" class="lives-container">
+                    <span class="heart" id="heart-1">❤️</span>
+                    <span class="heart" id="heart-2">❤️</span>
+                    <span class="heart" id="heart-3">❤️</span>
+                </div>
+            </div>
+
+            <!-- Keys Inventory -->
+            <div class="hud-panel inventory-panel right-panel">
+                <div class="panel-header">Llaves del Nexo</div>
+                <div class="keys-container">
+                    <div class="key-slot" id="slot-arithmetic" title="Llave de Aritmética">
+                        <div class="key-icon color-cyan">➕</div>
+                        <span>Aritmética</span>
+                    </div>
+                    <div class="key-slot" id="slot-algebra" title="Llave de Álgebra">
+                        <div class="key-icon color-magenta">x</div>
+                        <span>Álgebra</span>
+                    </div>
+                    <div class="key-slot" id="slot-geometry" title="Llave de Geometría">
+                        <div class="key-icon color-emerald">📐</div>
+                        <span>Geometría</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Helper (Bottom) -->
+            <div class="hud-controls-helper">
+                <span>[WASD] Moverse</span>
+                <span>[ESPACIO] Saltar</span>
+                <span>[Arrastrar Mouse] Cámara</span>
+            </div>
+        </div>
+
+        <!-- Interaction Tooltip -->
+        <div id="interact-prompt" class="hidden">
+            <div class="prompt-content">
+                <span class="interact-key">E</span>
+                <span class="prompt-text">Decodificar Monolito</span>
+            </div>
+        </div>
+
+        <!-- Math Question Modal -->
+        <div id="math-modal" class="hidden overlay-screen">
+            <div class="glass-panel modal-content">
+                <div class="modal-header">
+                    <span class="monolith-type" id="modal-monolith-type">Monolito Aritmético</span>
+                    <button class="close-btn" id="close-modal-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="question-container">
+                        <p class="question-instruction" id="question-category">Resuelve el acertijo para energizar el puente:</p>
+                        <p class="question-text" id="question-text">¿Cuánto es 12 &times; 8 - 15?</p>
+                    </div>
+
+                    <!-- Dynamic Input Methods (Text or Buttons) -->
+                    <div id="input-container-text" class="input-container">
+                        <input type="number" id="math-answer-input" placeholder="Tu respuesta numérica..." autocomplete="off">
+                    </div>
+                    
+                    <div id="input-container-choice" class="input-container hidden">
+                        <div class="choice-grid" id="math-choices-grid">
+                            <!-- Dynamically generated choice buttons go here -->
+                        </div>
+                    </div>
+
+                    <div id="feedback-message" class="feedback-msg"></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="submit-answer-btn" class="glow-button font-small">Enviar Respuesta</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victory-screen" class="hidden overlay-screen">
+            <div class="glass-panel victory-content">
+                <div class="victory-header">
+                    <div class="trophy-glow">👑</div>
+                    <h1>NEXO COMPLETADO</h1>
+                </div>
+                <p class="victory-message">Has decodificado todos los monolitos matemáticos y recuperado el <strong>Hipercubo Dorado</strong>.</p>
+                
+                <div class="stats-panel">
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-time">0:00</span>
+                        <span class="stat-label">Tiempo Transcurrido</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-accuracy">100%</span>
+                        <span class="stat-label">Precisión</span>
+                    </div>
+                </div>
+
+                <button id="restart-btn" class="glow-button">Iniciar Nuevo Nexo</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="hidden overlay-screen">
+            <div class="glass-panel game-over-content">
+                <div class="game-over-header">
+                    <div class="skull-glow">💥</div>
+                    <h1>NEXO INESTABLE</h1>
+                </div>
+                <p class="game-over-message">El dron ha sufrido daños críticos y la conexión dimensional se ha perdido.</p>
+                <button id="retry-btn" class="glow-button retry-button">Reiniciar Dron</button>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- MAIN GAME LOGIC STANDALONE -->
+    <script>
+        // Resolve global dependencies
+        const THREE = window.THREE;
+        const OrbitControls = THREE.OrbitControls;
+
+        /* =================================================================
+           1. PROCEDURAL AUDIO SYNTHESIZER (Web Audio API)
+           ================================================================= */
+        class AudioController {
+            constructor() {
+                this.ctx = null;
+                this.masterGain = null;
+                this.musicGain = null;
+                this.sfxGain = null;
+                this.initialized = false;
+                this.musicPlaying = false;
+                this.ambientOscillators = [];
+                this.ambientInterval = null;
+            }
+
+            init() {
+                if (this.initialized) return;
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                    
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+                    
+                    this.musicGain = this.ctx.createGain();
+                    this.musicGain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+                    
+                    this.sfxGain = this.ctx.createGain();
+                    this.sfxGain.gain.setValueAtTime(0.7, this.ctx.currentTime);
+                    
+                    this.musicGain.connect(this.masterGain);
+                    this.sfxGain.connect(this.masterGain);
+                    this.masterGain.connect(this.ctx.destination);
+                    
+                    this.initialized = true;
+                    this.startAmbientPad();
+                } catch (e) {
+                    console.warn("Web Audio API blocked or not supported: ", e);
+                }
+            }
+
+            resume() {
+                if (!this.initialized) this.init();
+                else if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+            }
+
+            playTone(frequency, type, duration, gainStart, slideTo = null, delay = 0) {
+                if (!this.initialized || !this.ctx || this.ctx.state === 'suspended') return;
+
+                const time = this.ctx.currentTime + delay;
+                const osc = this.ctx.createOscillator();
+                const gainNode = this.ctx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(frequency, time);
+                
+                if (slideTo) {
+                    osc.frequency.exponentialRampToValueAtTime(slideTo, time + duration);
+                }
+
+                gainNode.gain.setValueAtTime(0.0001, time);
+                gainNode.gain.linearRampToValueAtTime(gainStart, time + 0.02);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+
+                osc.connect(gainNode);
+                gainNode.connect(this.sfxGain);
+
+                osc.start(time);
+                osc.stop(time + duration);
+            }
+
+            playJump() {
+                this.resume();
+                this.playTone(150, 'triangle', 0.25, 0.5, 450);
+            }
+
+            playRespawn() {
+                this.resume();
+                this.playTone(600, 'sine', 0.6, 0.4, 80);
+                setTimeout(() => this.playTone(590, 'triangle', 0.5, 0.25, 75), 50);
+            }
+
+            playInteract() {
+                this.resume();
+                this.playTone(880, 'sine', 0.08, 0.3, 1200);
+                setTimeout(() => this.playTone(1760, 'sine', 0.12, 0.2), 40);
+            }
+
+            playCorrect() {
+                this.resume();
+                const notes = [261.63, 329.63, 392.00, 523.25];
+                notes.forEach((freq, idx) => {
+                    this.playTone(freq, 'sine', 0.4, 0.4, freq * 1.05, idx * 0.08);
+                });
+            }
+
+            playWrong() {
+                this.resume();
+                this.playTone(130, 'sawtooth', 0.4, 0.5, 70);
+                this.playTone(128, 'sawtooth', 0.4, 0.4, 69);
+            }
+
+            playLoseLife() {
+                this.resume();
+                const notes = [392.00, 311.13, 261.63, 196.00];
+                notes.forEach((freq, idx) => {
+                    this.playTone(freq, 'triangle', 0.25, 0.45, freq * 0.9, idx * 0.12);
+                });
+            }
+
+            playGameOver() {
+                this.resume();
+                const chord = [130.81, 155.56, 196.00, 233.08];
+                chord.forEach((freq) => {
+                    this.playTone(freq, 'sawtooth', 1.5, 0.4, freq * 0.95);
+                    this.playTone(freq * 1.002, 'triangle', 1.5, 0.2);
+                });
+            }
+
+            playKeyCollect() {
+                this.resume();
+                const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+                notes.forEach((freq, idx) => {
+                    this.playTone(freq, 'sine', 0.6, 0.35, freq * 1.02, idx * 0.06);
+                    setTimeout(() => this.playTone(freq * 1.5, 'triangle', 0.3, 0.1, freq * 1.52), idx * 60 + 20);
+                });
+            }
+
+            playBridgeStep(index) {
+                this.resume();
+                const freq = 120 + (index * 8);
+                this.playTone(freq, 'triangle', 0.2, 0.4, freq - 20);
+                setTimeout(() => this.playTone(freq * 3, 'sine', 0.05, 0.15), 10);
+            }
+
+            playVictory() {
+                this.resume();
+                const chords = [
+                    [261.63, 329.63, 392.00],
+                    [349.23, 440.00, 523.25],
+                    [392.00, 493.88, 587.33],
+                    [523.25, 659.25, 783.99, 1046.5]
+                ];
+                chords.forEach((chord, chordIdx) => {
+                    const delay = chordIdx * 0.35;
+                    const duration = chordIdx === 3 ? 1.5 : 0.4;
+                    chord.forEach((freq) => {
+                        this.playTone(freq, 'sine', duration, 0.35, null, delay);
+                        this.playTone(freq * 1.005, 'triangle', duration, 0.15, null, delay);
+                    });
+                });
+            }
+
+            startAmbientPad() {
+                if (this.musicPlaying || !this.initialized || !this.ctx) return;
+                this.musicPlaying = true;
+                
+                const chords = [
+                    [130.81, 164.81, 196.00, 293.66],
+                    [174.61, 220.00, 261.63, 392.00],
+                    [146.83, 174.61, 220.00, 329.63],
+                    [196.00, 246.94, 293.66, 440.00]
+                ];
+                let chordIndex = 0;
+                
+                const playPadChord = () => {
+                    if (!this.musicPlaying) return;
+                    const currentChord = chords[chordIndex];
+                    const time = this.ctx.currentTime;
+                    const chordDuration = 9.0;
+                    const fadeTime = 2.5;
+                    
+                    this.ambientOscillators = this.ambientOscillators.filter(o => {
+                        try { o.stop(); } catch(e) {}
+                        return false;
+                    });
+                    
+                    currentChord.forEach((freq) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, time);
+                        osc.frequency.setValueAtTime(freq + (Math.random() - 0.5) * 0.8, time);
+                        
+                        gain.gain.setValueAtTime(0.0001, time);
+                        gain.gain.linearRampToValueAtTime(0.12, time + fadeTime);
+                        gain.gain.setValueAtTime(0.12, time + chordDuration - fadeTime);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, time + chordDuration - 0.05);
+                        
+                        osc.connect(gain);
+                        gain.connect(this.musicGain);
+                        
+                        osc.start(time);
+                        osc.stop(time + chordDuration);
+                        this.ambientOscillators.push(osc);
+                    });
+                    
+                    chordIndex = (chordIndex + 1) % chords.length;
+                };
+
+                playPadChord();
+                this.ambientInterval = setInterval(playPadChord, 8500);
+            }
+
+            stopAmbientPad() {
+                this.musicPlaying = false;
+                if (this.ambientInterval) {
+                    clearInterval(this.ambientInterval);
+                    this.ambientInterval = null;
+                }
+                this.ambientOscillators.forEach(osc => {
+                    try { osc.stop(); } catch(e) {}
+                });
+                this.ambientOscillators = [];
+            }
+        }
+
+        const gameAudio = new AudioController();
+
+        /* =================================================================
+           2. MATH CHALLENGES ENGINE
+           ================================================================= */
+        class MathEngine {
+            constructor() {
+                this.geometryQuestions = [
+                    {
+                        text: "Un prisma hexagonal tiene 6 caras laterales y 2 bases. ¿Cuántos vértices tiene en total?",
+                        choices: ["8", "12", "14", "16"],
+                        answer: "12"
+                    },
+                    {
+                        text: "Si los dos ángulos menores de un triángulo miden 35° y 65°, ¿cuánto mide el tercer ángulo?",
+                        choices: ["70°", "80°", "90°", "100°"],
+                        answer: "80"
+                    },
+                    {
+                        text: "Un rectángulo tiene un perímetro de 36 cm. Si su altura es de 6 cm, ¿cuál es su área en cm²?",
+                        choices: ["36", "60", "72", "96"],
+                        answer: "72"
+                    },
+                    {
+                        text: "Un cilindro tiene un radio de 3 cm y una altura de 5 cm. ¿Cuál es el volumen entero si aproximamos π a 3?",
+                        choices: ["45", "90", "135", "180"],
+                        answer: "135"
+                    },
+                    {
+                        text: "¿Cuántas diagonales se pueden trazar desde un único vértice en un octágono regular?",
+                        choices: ["5", "6", "7", "8"],
+                        answer: "5"
+                    }
+                ];
+            }
+
+            generateQuestion(category, level) {
+                switch (category) {
+                    case 'arithmetic': return this.generateArithmetic(level);
+                    case 'algebra': return this.generateAlgebra(level);
+                    case 'geometry': return this.generateGeometry(level);
+                    default: return this.generateArithmetic(0);
+                }
+            }
+
+            generateArithmetic(level) {
+                let text = "";
+                let answer = 0;
+                let type = 'input';
+                
+                if (level === 0) {
+                    const a = Math.floor(Math.random() * 50) + 10;
+                    const b = Math.floor(Math.random() * 40) + 5;
+                    if (Math.random() > 0.5) {
+                        text = `¿Cuánto es ${a} + ${b}?`;
+                        answer = a + b;
+                    } else {
+                        text = `¿Cuánto es ${a} - ${b}?`;
+                        answer = a - b;
+                    }
+                } else if (level === 1) {
+                    const a = Math.floor(Math.random() * 12) + 4;
+                    const b = Math.floor(Math.random() * 11) + 3;
+                    const c = Math.floor(Math.random() * 20) + 5;
+                    if (Math.random() > 0.5) {
+                        text = `¿Cuánto es ${a} &times; ${b} + ${c}?`;
+                        answer = (a * b) + c;
+                    } else {
+                        text = `¿Cuánto es ${a} &times; ${b} - ${c}?`;
+                        answer = (a * b) - c;
+                    }
+                } else {
+                    const divisor = Math.floor(Math.random() * 8) + 3;
+                    const answerMultiplier = Math.floor(Math.random() * 12) + 4;
+                    const dividend = divisor * answerMultiplier;
+                    const extra = Math.floor(Math.random() * 15) + 2;
+                    text = `Calcula: (${dividend} &divide; ${divisor}) + ${extra}`;
+                    answer = answerMultiplier + extra;
+                }
+                return { category: 'Aritmética', text: text, type: type, answer: answer.toString() };
+            }
+
+            generateAlgebra(level) {
+                let text = "";
+                let answer = "";
+                let type = 'input';
+                
+                if (level === 0) {
+                    const start = Math.floor(Math.random() * 10) + 2;
+                    const step = Math.floor(Math.random() * 6) + 3;
+                    const seq = [start, start + step, start + 2 * step, start + 3 * step];
+                    text = `Completa la secuencia: ${seq.join(', ')},  __?`;
+                    answer = (start + 4 * step).toString();
+                } else if (level === 1) {
+                    const x = Math.floor(Math.random() * 8) + 3;
+                    const a = Math.floor(Math.random() * 5) + 2;
+                    const b = Math.floor(Math.random() * 15) + 1;
+                    const c = (a * x) + b;
+                    text = `Resuelve para X:  ${a}x + ${b} = ${c}`;
+                    answer = x.toString();
+                } else {
+                    if (Math.random() > 0.5) {
+                        const start = Math.floor(Math.random() * 3) + 2;
+                        const ratio = Math.random() > 0.5 ? 2 : 3;
+                        const seq = [start, start * ratio, start * ratio * ratio, start * ratio * ratio * ratio];
+                        text = `Halla el término siguiente en la progresión: ${seq.join(', ')},  __?`;
+                        answer = (start * Math.pow(ratio, 4)).toString();
+                    } else {
+                        const squares = [];
+                        const startNum = Math.floor(Math.random() * 4) + 1;
+                        for (let i = 0; i < 4; i++) {
+                            squares.push(Math.pow(startNum + i, 2));
+                        }
+                        text = `Completa el patrón cuadrático: ${squares.join(', ')},  __?`;
+                        answer = Math.pow(startNum + 4, 2).toString();
+                    }
+                }
+                return { category: 'Álgebra', text: text, type: type, answer: answer };
+            }
+
+            generateGeometry(level) {
+                const index = Math.min(level, this.geometryQuestions.length - 1);
+                let q = this.geometryQuestions[index];
+                if (level >= 2) {
+                    const randomOffset = Math.floor(Math.random() * (this.geometryQuestions.length - 2)) + 2;
+                    q = this.geometryQuestions[randomOffset];
+                }
+                return { category: 'Geometría y Lógica', text: q.text, type: 'choice', choices: this.shuffleArray([...q.choices]), answer: q.answer };
+            }
+
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+        }
+
+        const mathEngine = new MathEngine();
+
+        /* =================================================================
+           3. PLAYER / CHARACTER CONTROLLER
+           ================================================================= */
+        class Player {
+            constructor(scene) {
+                this.scene = scene;
+                this.position = new THREE.Vector3(0, 5, 0);
+                this.velocity = new THREE.Vector3(0, 0, 0);
+                this.speed = 0.13;
+                this.gravity = -0.009;
+                this.jumpForce = 0.22;
+                this.isGrounded = false;
+                this.radius = 0.8;
+                
+                this.keys = {
+                    w: false, a: false, s: false, d: false,
+                    ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false,
+                    space: false
+                };
+                
+                this.mesh = this.createDroneMesh();
+                this.scene.add(this.mesh);
+                this.mesh.position.copy(this.position);
+                
+                this.exhaustParticles = [];
+                this.particleGroup = new THREE.Group();
+                this.scene.add(this.particleGroup);
+                
+                this.setupInputListeners();
+            }
+
+            createDroneMesh() {
+                const droneGroup = new THREE.Group();
+                const bodyMat = new THREE.MeshStandardMaterial({
+                    color: 0xe0e7ff, metalness: 0.95, roughness: 0.05
+                });
+                const glowMat = new THREE.MeshBasicMaterial({ color: 0x00f2fe });
+                const metallicMat = new THREE.MeshStandardMaterial({
+                    color: 0x334155, metalness: 0.8, roughness: 0.2
+                });
+
+                const coreGeo = new THREE.SphereGeometry(this.radius * 0.7, 32, 32);
+                const coreMesh = new THREE.Mesh(coreGeo, bodyMat);
+                coreMesh.castShadow = true;
+                coreMesh.receiveShadow = true;
+                droneGroup.add(coreMesh);
+                
+                const visorGeo = new THREE.BoxGeometry(this.radius * 0.9, this.radius * 0.18, this.radius * 0.5);
+                const visorMesh = new THREE.Mesh(visorGeo, glowMat);
+                visorMesh.position.set(0, 0.08, this.radius * 0.45);
+                visorMesh.castShadow = true;
+                droneGroup.add(visorMesh);
+                this.visorMesh = visorMesh;
+                
+                const ringGeo = new THREE.TorusGeometry(this.radius * 1.05, 0.04, 8, 48);
+                const ringMesh = new THREE.Mesh(ringGeo, metallicMat);
+                ringMesh.rotation.x = Math.PI / 2;
+                ringMesh.castShadow = true;
+                droneGroup.add(ringMesh);
+                this.orbitRing = ringMesh;
+                
+                const thrusterGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.4, 16);
+                const leftThruster = new THREE.Mesh(thrusterGeo, metallicMat);
+                leftThruster.position.set(-this.radius * 0.9, -0.1, 0);
+                leftThruster.rotation.z = Math.PI / 12;
+                leftThruster.castShadow = true;
+                droneGroup.add(leftThruster);
+                
+                const rightThruster = new THREE.Mesh(thrusterGeo, metallicMat);
+                rightThruster.position.set(this.radius * 0.9, -0.1, 0);
+                rightThruster.rotation.z = -Math.PI / 12;
+                rightThruster.castShadow = true;
+                droneGroup.add(rightThruster);
+                
+                const exhaustGeo = new THREE.SphereGeometry(0.06, 8, 8);
+                const leftExhaust = new THREE.Mesh(exhaustGeo, glowMat);
+                leftExhaust.position.set(-this.radius * 0.9, -0.3, 0);
+                droneGroup.add(leftExhaust);
+                
+                const rightExhaust = new THREE.Mesh(exhaustGeo, glowMat);
+                rightExhaust.position.set(this.radius * 0.9, -0.3, 0);
+                droneGroup.add(rightExhaust);
+
+                return droneGroup;
+            }
+
+            setupInputListeners() {
+                window.addEventListener('keydown', (e) => {
+                    if (e.code === 'KeyW' || e.code === 'ArrowUp') this.keys.w = true;
+                    if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.keys.a = true;
+                    if (e.code === 'KeyS' || e.code === 'ArrowDown') this.keys.s = true;
+                    if (e.code === 'KeyD' || e.code === 'ArrowRight') this.keys.d = true;
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        this.keys.space = true;
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    if (e.code === 'KeyW' || e.code === 'ArrowUp') this.keys.w = false;
+                    if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.keys.a = false;
+                    if (e.code === 'KeyS' || e.code === 'ArrowDown') this.keys.s = false;
+                    if (e.code === 'KeyD' || e.code === 'ArrowRight') this.keys.d = false;
+                    if (e.code === 'Space') this.keys.space = false;
+                });
+            }
+
+            setVisorColor(hexColor) {
+                if (this.visorMesh) this.visorMesh.material.color.setHex(hexColor);
+            }
+
+            update(camera, groundColliders) {
+                const moveVector = new THREE.Vector3(0, 0, 0);
+                const forward = this.keys.w || this.keys.ArrowUp;
+                const backward = this.keys.s || this.keys.ArrowDown;
+                const left = this.keys.a || this.keys.ArrowLeft;
+                const right = this.keys.d || this.keys.ArrowRight;
+                
+                if (forward) moveVector.z -= 1;
+                if (backward) moveVector.z += 1;
+                if (left) moveVector.x -= 1;
+                if (right) moveVector.x += 1;
+
+                if (moveVector.lengthSq() > 0) {
+                    moveVector.normalize();
+                    const camDir = new THREE.Vector3();
+                    camera.getWorldDirection(camDir);
+                    camDir.y = 0;
+                    camDir.normalize();
+                    
+                    const camRight = new THREE.Vector3(-camDir.z, 0, camDir.x);
+                    const actualMove = new THREE.Vector3()
+                        .addScaledVector(camDir, -moveVector.z)
+                        .addScaledVector(camRight, moveVector.x);
+                    actualMove.normalize();
+                    
+                    this.velocity.x = actualMove.x * this.speed;
+                    this.velocity.z = actualMove.z * this.speed;
+                    
+                    const targetRotation = Math.atan2(actualMove.x, actualMove.z);
+                    let diff = targetRotation - this.mesh.rotation.y;
+                    diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+                    this.mesh.rotation.y += diff * 0.15;
+                    this.mesh.rotation.z = -moveVector.x * 0.15;
+                    this.mesh.rotation.x = -moveVector.z * 0.1;
+                } else {
+                    this.velocity.x *= 0.8;
+                    this.velocity.z *= 0.8;
+                    this.mesh.rotation.z *= 0.85;
+                    this.mesh.rotation.x *= 0.85;
+                }
+
+                this.velocity.y += this.gravity;
+                if (this.keys.space && this.isGrounded) {
+                    this.velocity.y = this.jumpForce;
+                    this.isGrounded = false;
+                    gameAudio.playJump();
+                }
+
+                this.position.add(this.velocity);
+
+                let groundY = -999;
+                for (const col of groundColliders) {
+                    if (col.type === 'circle') {
+                        const dx = this.position.x - col.x;
+                        const dz = this.position.z - col.z;
+                        const distSq = dx * dx + dz * dz;
+                        if (distSq < col.radius * col.radius) {
+                            groundY = Math.max(groundY, col.y);
+                        }
+                    } else if (col.type === 'box') {
+                        if (this.position.x >= col.minX && this.position.x <= col.maxX &&
+                            this.position.z >= col.minZ && this.position.z <= col.maxZ) {
+                            groundY = Math.max(groundY, col.y);
+                        }
+                    } else if (col.type === 'rotated_box') {
+                        const dx = this.position.x - col.startX;
+                        const dz = this.position.z - col.startZ;
+                        const localZ = dx * col.dirX + dz * col.dirZ;
+                        const localX = -dx * col.dirZ + dz * col.dirX;
+                        
+                        if (localZ >= -0.5 && localZ <= col.length + 0.5 &&
+                            localX >= -col.width / 2 && localX <= col.width / 2) {
+                            groundY = Math.max(groundY, col.y);
+                            
+                            const limit = col.width / 2 - this.radius;
+                            if (localX < -limit) {
+                                const correctionX = -limit - localX;
+                                this.position.x += correctionX * (-col.dirZ);
+                                this.position.z += correctionX * col.dirX;
+                            } else if (localX > limit) {
+                                const correctionX = limit - localX;
+                                this.position.x += correctionX * (-col.dirZ);
+                                this.position.z += correctionX * col.dirX;
+                            }
+                        }
+                    }
+                }
+
+                if (groundY > -900) {
+                    if (this.position.y - this.radius <= groundY && this.velocity.y <= 0) {
+                        this.position.y = groundY + this.radius;
+                        this.velocity.y = 0;
+                        this.isGrounded = true;
+                    }
+                } else {
+                    this.isGrounded = false;
+                }
+
+                if (this.position.y < -15) this.respawn();
+
+                this.mesh.position.copy(this.position);
+                const time = performance.now() * 0.003;
+                this.mesh.position.y += Math.sin(time) * 0.06;
+                
+                if (this.orbitRing) {
+                    this.orbitRing.rotation.z += 0.02;
+                    this.orbitRing.rotation.y = Math.sin(time * 0.5) * 0.15;
+                }
+
+                if (Math.random() < 0.35) this.spawnExhaustParticle();
+                this.updateExhaustParticles();
+            }
+
+            respawn() {
+                gameAudio.playRespawn();
+                // Spawnear ligeramente alejado del vault central para evitar clipping
+                this.position.set(0, 6, 5);
+                this.velocity.set(0, 0, 0);
+                this.mesh.position.copy(this.position);
+                this.isGrounded = false;
+                if (this.onRespawnCallback) this.onRespawnCallback();
+            }
+
+            spawnExhaustParticle() {
+                const pGeo = new THREE.SphereGeometry(0.04 + Math.random() * 0.04, 4, 4);
+                const pMat = new THREE.MeshBasicMaterial({
+                    color: this.visorMesh.material.color.getHex(), transparent: true, opacity: 0.8
+                });
+                const pMesh = new THREE.Mesh(pGeo, pMat);
+                
+                const offset = new THREE.Vector3((Math.random() - 0.5) * 1.5, -0.3, -0.3);
+                offset.applyQuaternion(this.mesh.quaternion);
+                pMesh.position.copy(this.position).add(offset);
+                
+                const vel = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.02, -0.03 - Math.random() * 0.03, (Math.random() - 0.5) * 0.02
+                );
+                
+                this.particleGroup.add(pMesh);
+                this.exhaustParticles.push({
+                    mesh: pMesh, velocity: vel, life: 1.0, decay: 0.04 + Math.random() * 0.03
+                });
+            }
+
+            updateExhaustParticles() {
+                for (let i = this.exhaustParticles.length - 1; i >= 0; i--) {
+                    const p = this.exhaustParticles[i];
+                    p.mesh.position.add(p.velocity);
+                    p.life -= p.decay;
+                    p.mesh.material.opacity = p.life;
+                    p.mesh.scale.setScalar(p.life);
+                    
+                    if (p.life <= 0) {
+                        this.particleGroup.remove(p.mesh);
+                        p.mesh.geometry.dispose();
+                        p.mesh.material.dispose();
+                        this.exhaustParticles.splice(i, 1);
+                    }
+                }
+            }
+
+            resetParticles() {
+                this.exhaustParticles.forEach(p => {
+                    this.particleGroup.remove(p.mesh);
+                    p.mesh.geometry.dispose();
+                    p.mesh.material.dispose();
+                });
+                this.exhaustParticles = [];
+            }
+
+            destroy() {
+                this.scene.remove(this.mesh);
+                this.scene.remove(this.particleGroup);
+                this.resetParticles();
+            }
+        }
+
+        /* =================================================================
+           4. WORLD BUILDER ENGINE (Islands, Cosmic Scenery, Bridges)
+           ================================================================= */
+        class World {
+            constructor(scene) {
+                this.scene = scene;
+                this.colliders = [];
+                this.bobbingElements = [];
+                this.particles = null;
+                this.monoliths = [];
+                this.keys = [];
+                this.bridges = {
+                    arithmetic: { active: false, slabs: [], boundingBoxes: [] },
+                    algebra: { active: false, slabs: [], boundingBoxes: [] },
+                    geometry: { active: false, slabs: [], boundingBoxes: [] }
+                };
+                
+                this.colors = {
+                    cyan: 0x00f2fe,
+                    magenta: 0xff007f,
+                    emerald: 0x10b981,
+                    gold: 0xf59e0b,
+                    islandBase: 0x0f172a,
+                    islandTop: 0x1e293b,
+                    crystalCyan: 0x06b6d4,
+                    crystalMagenta: 0xd946ef,
+                    crystalEmerald: 0x10b981
+                };
+                
+                this.buildEnvironment();
+                this.createLights();
+                this.createFloatingParticles();
+            }
+
+            createLights() {
+                const ambientLight = new THREE.HemisphereLight(0xffffff, 0x060913, 0.45);
+                this.scene.add(ambientLight);
+                
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
+                dirLight.position.set(15, 30, 10);
+                dirLight.castShadow = true;
+                dirLight.shadow.mapSize.width = 2048;
+                dirLight.shadow.mapSize.height = 2048;
+                // Ampliar frustum de sombras para cubrir todo el área de juego
+                dirLight.shadow.camera.left = -45;
+                dirLight.shadow.camera.right = 45;
+                dirLight.shadow.camera.top = 45;
+                dirLight.shadow.camera.bottom = -45;
+                dirLight.shadow.camera.near = 0.5;
+                dirLight.shadow.camera.far = 80;
+                this.scene.add(dirLight);
+                
+                const colors = [this.colors.cyan, this.colors.magenta, this.colors.emerald];
+                const positions = [
+                    new THREE.Vector3(-28, 2, 8),
+                    new THREE.Vector3(28, 2, 8),
+                    new THREE.Vector3(0, 2, 28)
+                ];
+                positions.forEach((pos, idx) => {
+                    const pLight = new THREE.PointLight(colors[idx], 1.5, 15);
+                    pLight.position.copy(pos);
+                    this.scene.add(pLight);
+                });
+            }
+
+            buildEnvironment() {
+                this.scene.fog = new THREE.FogExp2(0x060913, 0.022);
+
+                this.createIsland(0, 0, 0, 12, this.colors.islandTop, 'hub');
+                this.colliders.push({ type: 'circle', x: 0, z: 0, radius: 12, y: 0 });
+                this.createCentralVault();
+                
+                this.createIsland(-32, 0, 8, 7, this.colors.crystalCyan, 'arithmetic');
+                this.colliders.push({ type: 'circle', x: -32, z: 8, radius: 7, y: 0 });
+                this.createMonolith(-32, 1, 8, 'key_arithmetic', this.colors.cyan, "➖ Llave Aritmética");
+                this.createCrystalsAround(-32, 8, 7, this.colors.cyan);
+
+                this.createIsland(32, 0, 8, 7, this.colors.crystalMagenta, 'algebra');
+                this.colliders.push({ type: 'circle', x: 32, z: 8, radius: 7, y: 0 });
+                this.createMonolith(32, 1, 8, 'key_algebra', this.colors.magenta, "x Llave Álgebra");
+                this.createCrystalsAround(32, 8, 7, this.colors.magenta);
+
+                this.createIsland(0, 0, 32, 7, this.colors.crystalEmerald, 'geometry');
+                this.colliders.push({ type: 'circle', x: 0, z: 32, radius: 7, y: 0 });
+                this.createMonolith(0, 1, 32, 'key_geometry', this.colors.emerald, "📐 Llave Geometría");
+                this.createCrystalsAround(0, 32, 7, this.colors.emerald);
+
+                this.createMonolith(-10.5, 1, 2.5, 'bridge_arithmetic', this.colors.cyan, "➕ Activar Puente Aritmética");
+                this.createMonolith(10.5, 1, 2.5, 'bridge_algebra', this.colors.magenta, "x Activar Puente Álgebra");
+                this.createMonolith(0, 1, 10.5, 'bridge_geometry', this.colors.emerald, "📐 Activar Puente Geometría");
+
+                const gridHelper = new THREE.GridHelper(160, 40, 0x1e293b, 0x0f172a);
+                gridHelper.position.y = -12;
+                this.scene.add(gridHelper);
+
+                this.createSpaceScenery();
+            }
+
+            createSpaceScenery() {
+                const planetGroup = new THREE.Group();
+                planetGroup.position.set(40, 15, -45);
+                
+                const planetGeo = new THREE.SphereGeometry(6, 32, 32);
+                const planetMat = new THREE.MeshStandardMaterial({
+                    color: 0x6366f1, roughness: 0.6, metalness: 0.2, emissive: 0x312e81, emissiveIntensity: 0.5
+                });
+                const planet = new THREE.Mesh(planetGeo, planetMat);
+                planetGroup.add(planet);
+
+                const ringGeo = new THREE.RingGeometry(8, 12, 64);
+                const ringMat = new THREE.MeshBasicMaterial({
+                    color: 0xff007f, side: THREE.DoubleSide, transparent: true, opacity: 0.4
+                });
+                const rings = new THREE.Mesh(ringGeo, ringMat);
+                rings.rotation.x = Math.PI / 2.3;
+                rings.rotation.y = Math.PI / 8;
+                planetGroup.add(rings);
+                
+                this.scene.add(planetGroup);
+                this.bobbingElements.push({
+                    mesh: planetGroup, offset: 0, speed: 0.0002, range: 0.5, startY: 15
+                });
+
+                const moonGeo = new THREE.SphereGeometry(3.5, 32, 32);
+                const moonMat = new THREE.MeshBasicMaterial({ color: 0x00f2fe });
+                const moon = new THREE.Mesh(moonGeo, moonMat);
+                moon.position.set(-45, 20, 45);
+                this.scene.add(moon);
+            }
+
+            createIsland(x, y, z, radius, glowColor, type) {
+                const islandGroup = new THREE.Group();
+                islandGroup.position.set(x, y, z);
+                
+                const topMat = new THREE.MeshStandardMaterial({
+                    color: this.colors.islandTop, roughness: 0.8, metalness: 0.1
+                });
+                const baseMat = new THREE.MeshStandardMaterial({
+                    color: this.colors.islandBase, roughness: 0.9, metalness: 0.2
+                });
+
+                const topGeo = new THREE.CylinderGeometry(radius, radius - 0.5, 1, 24);
+                const topMesh = new THREE.Mesh(topGeo, topMat);
+                topMesh.position.y = -0.5;
+                topMesh.receiveShadow = true;
+                islandGroup.add(topMesh);
+
+                const baseHeight = radius * 1.2;
+                const baseGeo = new THREE.ConeGeometry(radius - 0.4, baseHeight, 12, 1);
+                const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+                baseMesh.position.y = -baseHeight/2 - 1.0;
+                baseMesh.rotation.x = Math.PI;
+                baseMesh.castShadow = true;
+                islandGroup.add(baseMesh);
+
+                const ringGeo = new THREE.TorusGeometry(radius - 0.1, 0.05, 8, 36);
+                const ringMat = new THREE.MeshBasicMaterial({
+                    color: type === 'hub' ? this.colors.gold : glowColor
+                });
+                const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                ringMesh.rotation.x = Math.PI / 2;
+                ringMesh.position.y = -0.05;
+                islandGroup.add(ringMesh);
+
+                this.scene.add(islandGroup);
+                
+                if (type !== 'hub') {
+                    this.bobbingElements.push({
+                        mesh: islandGroup, offset: Math.random() * 10, speed: 0.001 + Math.random() * 0.001,
+                        range: 0.15 + Math.random() * 0.1, startY: y
+                    });
+                }
+            }
+
+            createMonolith(x, y, z, id, glowColor, label) {
+                const group = new THREE.Group();
+                group.position.set(x, y, z);
+
+                const pillarMat = new THREE.MeshStandardMaterial({
+                    color: 0x0f172a, roughness: 0.2, metalness: 0.95
+                });
+                const coreGeo = new THREE.BoxGeometry(0.8, 2.0, 0.4);
+                const coreMesh = new THREE.Mesh(coreGeo, pillarMat);
+                coreMesh.position.y = 1.0;
+                coreMesh.castShadow = true;
+                group.add(coreMesh);
+
+                const symbolGeo = new THREE.BoxGeometry(0.1, 0.8, 0.42);
+                const symbolMat = new THREE.MeshBasicMaterial({ color: glowColor });
+                const symbolMesh = new THREE.Mesh(symbolGeo, symbolMat);
+                symbolMesh.position.set(0, 1.1, 0.02);
+                group.add(symbolMesh);
+                
+                const pLight = new THREE.PointLight(glowColor, 0.8, 4);
+                pLight.position.set(0, 1.2, 0.4);
+                group.add(pLight);
+
+                this.scene.add(group);
+
+                this.monoliths.push({
+                    id: id, mesh: group, glowColor: glowColor, light: pLight, symbol: symbolMesh,
+                    position: new THREE.Vector3(x, y, z), label: label, solved: false, radius: 2.2
+                });
+            }
+
+            createCentralVault() {
+                const vaultGroup = new THREE.Group();
+                vaultGroup.position.set(0, 0, 0);
+
+                const pedMat = new THREE.MeshStandardMaterial({
+                    color: 0x334155, metalness: 0.7, roughness: 0.3
+                });
+                const pedGeo = new THREE.CylinderGeometry(2, 2.2, 0.8, 8);
+                const pedMesh = new THREE.Mesh(pedGeo, pedMat);
+                pedMesh.position.y = 0.4;
+                pedMesh.castShadow = true;
+                pedMesh.receiveShadow = true;
+                vaultGroup.add(pedMesh);
+
+                const shieldGeo = new THREE.CylinderGeometry(1.6, 1.6, 2.2, 16, 1, true);
+                const shieldMat = new THREE.MeshStandardMaterial({
+                    color: 0x94a3b8, transparent: true, opacity: 0.25, roughness: 0.1, metalness: 0.9, side: THREE.DoubleSide
+                });
+                const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
+                shieldMesh.position.y = 1.8;
+                vaultGroup.add(shieldMesh);
+                this.vaultShield = shieldMesh;
+
+                const tesserGroup = new THREE.Group();
+                tesserGroup.position.set(0, 1.8, 0);
+                
+                const outerGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+                const wireframe = new THREE.EdgesGeometry(outerGeo);
+                const lineMat = new THREE.LineBasicMaterial({ color: this.colors.gold, linewidth: 2 });
+                const outerWire = new THREE.LineSegments(wireframe, lineMat);
+                tesserGroup.add(outerWire);
+
+                const innerGeo = new THREE.BoxGeometry(0.35, 0.35, 0.35);
+                const innerMat = new THREE.MeshStandardMaterial({
+                    color: this.colors.gold, emissive: this.colors.gold, emissiveIntensity: 1.5, transparent: true, opacity: 0.85
+                });
+                const innerCube = new THREE.Mesh(innerGeo, innerMat);
+                tesserGroup.add(innerCube);
+
+                vaultGroup.add(tesserGroup);
+                this.treasureCube = tesserGroup;
+
+                const goldLight = new THREE.PointLight(this.colors.gold, 2.0, 8);
+                goldLight.position.set(0, 2.0, 0);
+                vaultGroup.add(goldLight);
+                this.treasureLight = goldLight;
+
+                const lockColors = [this.colors.cyan, this.colors.magenta, this.colors.emerald];
+                this.vaultLocks = [];
+
+                for (let i = 0; i < 3; i++) {
+                    const angle = (i * Math.PI * 2) / 3;
+                    const radius = 1.6;
+                    
+                    const lockGeo = new THREE.SphereGeometry(0.18, 16, 16);
+                    const lockMat = new THREE.MeshStandardMaterial({
+                        color: 0x475569, emissive: 0x334155, emissiveIntensity: 0.2
+                    });
+                    const lockMesh = new THREE.Mesh(lockGeo, lockMat);
+                    lockMesh.position.set(Math.cos(angle) * radius, 0.9, Math.sin(angle) * radius);
+                    vaultGroup.add(lockMesh);
+                    
+                    const circleGeo = new THREE.RingGeometry(0.24, 0.28, 16);
+                    const circleMat = new THREE.MeshBasicMaterial({ color: 0x475569, side: THREE.DoubleSide });
+                    const circleMesh = new THREE.Mesh(circleGeo, circleMat);
+                    circleMesh.position.copy(lockMesh.position);
+                    circleMesh.position.y = 0.81;
+                    circleMesh.rotation.x = Math.PI / 2;
+                    vaultGroup.add(circleMesh);
+
+                    this.vaultLocks.push({
+                        mesh: lockMesh, circle: circleMesh, activeColor: lockColors[i], activated: false
+                    });
+                }
+                this.scene.add(vaultGroup);
+            }
+
+            activateVaultLock(index) {
+                if (index < 0 || index >= this.vaultLocks.length) return;
+                const lock = this.vaultLocks[index];
+                lock.activated = true;
+                lock.mesh.material.color.setHex(lock.activeColor);
+                lock.mesh.material.emissive.setHex(lock.activeColor);
+                lock.mesh.material.emissiveIntensity = 2.0;
+                lock.circle.material.color.setHex(lock.activeColor);
+                
+                this.triggerKeyBurst(lock.mesh.position, lock.activeColor);
+            }
+
+            openVaultShield() {
+                let duration = 80;
+                let count = 0;
+                const slide = () => {
+                    if (count < duration) {
+                        this.vaultShield.position.y -= 0.03;
+                        this.treasureCube.position.y += 0.015;
+                        this.treasureLight.intensity += 0.05;
+                        count++;
+                        requestAnimationFrame(slide);
+                    }
+                };
+                slide();
+                gameAudio.playVictory();
+            }
+
+            createCrystalsAround(centerX, centerZ, islandRadius, color) {
+                const crystalMat = new THREE.MeshStandardMaterial({
+                    color: color, emissive: color, emissiveIntensity: 0.6, roughness: 0.1, metalness: 0.9, transparent: true, opacity: 0.85
+                });
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i * Math.PI * 2) / 4 + 0.5;
+                    const r = islandRadius - 0.6;
+                    const x = centerX + Math.cos(angle) * r;
+                    const z = centerZ + Math.sin(angle) * r;
+                    const geom = new THREE.OctahedronGeometry(0.25 + Math.random() * 0.2, 0);
+                    const mesh = new THREE.Mesh(geom, crystalMat);
+                    mesh.position.set(x, 0.4 + Math.random() * 0.4, z);
+                    mesh.scale.set(0.6, 1.5, 0.6);
+                    this.scene.add(mesh);
+
+                    this.bobbingElements.push({
+                        mesh: mesh, offset: Math.random() * 5, speed: 0.002 + Math.random() * 0.002,
+                        range: 0.1 + Math.random() * 0.05, startY: mesh.position.y
+                    });
+                }
+            }
+
+            createFloatingParticles() {
+                const count = 150;
+                const geom = new THREE.BufferGeometry();
+                const positions = new Float32Array(count * 3);
+                for (let i = 0; i < count; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 90;
+                    positions[i * 3 + 1] = Math.random() * 15 - 5;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 90;
+                }
+                geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const pMat = new THREE.PointsMaterial({
+                    color: 0x94a3b8, size: 0.18, transparent: true, opacity: 0.65, sizeAttenuation: true
+                });
+                this.particles = new THREE.Points(geom, pMat);
+                this.scene.add(this.particles);
+            }
+
+            buildBridge(type) {
+                if (this.bridges[type].active) return;
+                this.bridges[type].active = true;
+
+                let startPos = new THREE.Vector3(0, 0, 0);
+                let endPos = new THREE.Vector3(0, 0, 0);
+                
+                if (type === 'arithmetic') {
+                    // Hub(0,0)→Arith(-32,8): dir≈(-0.97,0.24)
+                    // Start 2u fuera del borde del hub (r=12), end 2u fuera del borde de isla (r=7)
+                    startPos.set(-13.5, 0.0, 3.5);
+                    endPos.set(-23.5, 0.0, 6.0);
+                } else if (type === 'algebra') {
+                    // Hub(0,0)→Algebra(32,8): dir≈(0.97,0.24)
+                    startPos.set(13.5, 0.0, 3.5);
+                    endPos.set(23.5, 0.0, 6.0);
+                } else if (type === 'geometry') {
+                    // Hub(0,0)→Geom(0,32): dir=(0,1)
+                    // Start 2u fuera borde hub (z=12+2=14), end 2u fuera borde geom (z=32-7-2=23)
+                    startPos.set(0, 0.0, 14.0);
+                    endPos.set(0, 0.0, 23.0);
+                }
+
+                const steps = 8;
+                const bridgeObj = this.bridges[type];
+                
+                const dir = new THREE.Vector3().subVectors(endPos, startPos);
+                const distance = dir.length();
+                dir.normalize();
+                
+                const bridgeAngle = Math.atan2(dir.x, dir.z);
+                const slabWidth = 3.6;
+                const slabLength = 2.2;
+
+                for (let i = 0; i < steps; i++) {
+                    const ratio = (i + 1) / (steps + 1);
+                    const slabPos = new THREE.Vector3().lerpVectors(startPos, endPos, ratio);
+                    
+                    const slabGeo = new THREE.BoxGeometry(slabWidth, 0.4, slabLength);
+                    const slabMat = new THREE.MeshStandardMaterial({
+                        color: 0x1e293b, metalness: 0.5, roughness: 0.6
+                    });
+                    const slab = new THREE.Mesh(slabGeo, slabMat);
+                    slab.rotation.y = bridgeAngle;
+                    
+                    const trackGeo = new THREE.BoxGeometry(0.12, 0.05, slabLength);
+                    const trackMat = new THREE.MeshBasicMaterial({
+                        color: type === 'arithmetic' ? this.colors.cyan :
+                               type === 'algebra' ? this.colors.magenta : this.colors.emerald
+                    });
+                    const track = new THREE.Mesh(trackGeo, trackMat);
+                    track.position.y = 0.22;
+                    slab.add(track);
+
+                    const railGeo = new THREE.BoxGeometry(0.12, 0.6, slabLength);
+                    const railMat = new THREE.MeshStandardMaterial({
+                        color: 0x0f172a, metalness: 0.8, roughness: 0.2
+                    });
+                    const leftRail = new THREE.Mesh(railGeo, railMat);
+                    leftRail.position.set(-slabWidth / 2 + 0.06, 0.3, 0);
+                    leftRail.castShadow = true;
+                    slab.add(leftRail);
+
+                    const rightRail = new THREE.Mesh(railGeo, railMat);
+                    rightRail.position.set(slabWidth / 2 - 0.06, 0.3, 0);
+                    rightRail.castShadow = true;
+                    slab.add(rightRail);
+
+                    const tubeGeo = new THREE.CylinderGeometry(0.04, 0.04, slabLength, 8);
+                    const tubeMat = new THREE.MeshBasicMaterial({ color: trackMat.color.getHex() });
+                    
+                    const leftTube = new THREE.Mesh(tubeGeo, tubeMat);
+                    leftTube.rotation.x = Math.PI / 2;
+                    leftTube.position.set(-slabWidth / 2 + 0.06, 0.6, 0);
+                    slab.add(leftTube);
+
+                    const rightTube = new THREE.Mesh(tubeGeo, tubeMat);
+                    rightTube.rotation.x = Math.PI / 2;
+                    rightTube.position.set(slabWidth / 2 - 0.06, 0.6, 0);
+                    slab.add(rightTube);
+                    
+                    slab.position.copy(slabPos);
+                    slab.position.y = -15;
+                    slab.scale.set(0.01, 0.01, 0.01);
+                    slab.castShadow = true;
+                    slab.receiveShadow = true;
+                    
+                    this.scene.add(slab);
+                    bridgeObj.slabs.push(slab);
+                    
+                    const colliderStart = slabPos.clone().addScaledVector(dir, -slabLength / 2);
+                    const bbox = {
+                        type: 'rotated_box',
+                        startX: colliderStart.x,
+                        startZ: colliderStart.z,
+                        dirX: dir.x,
+                        dirZ: dir.z,
+                        length: slabLength,
+                        width: slabWidth,
+                        // y=0 coincide con la superficie de las islas para no crear escalón
+                        y: 0
+                    };
+                    
+                    setTimeout(() => {
+                        this.animateSlabSpawning(slab, slabPos.y, i);
+                        this.colliders.push(bbox);
+                        this.triggerKeyBurst(slabPos, trackMat.color.getHex());
+                    }, i * 220);
+                }
+            }
+
+            animateSlabSpawning(slab, targetY, index) {
+                let val = 0.0;
+                const speed = 0.07;
+                const anim = () => {
+                    if (val < 1.0) {
+                        val += speed;
+                        const scale = THREE.MathUtils.lerp(0.01, 1.0, val);
+                        slab.scale.set(scale, scale, scale);
+                        slab.position.y = THREE.MathUtils.lerp(-15, targetY, val);
+                        requestAnimationFrame(anim);
+                    } else {
+                        slab.scale.set(1.0, 1.0, 1.0);
+                        slab.position.y = targetY;
+                        gameAudio.playBridgeStep(index);
+                    }
+                };
+                anim();
+            }
+
+            triggerKeyBurst(position, colorHex) {
+                const count = 25;
+                const pGroup = new THREE.Group();
+                const pGeo = new THREE.SphereGeometry(0.06, 4, 4);
+                const pMat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.9 });
+                const list = [];
+                
+                for (let i = 0; i < count; i++) {
+                    const mesh = new THREE.Mesh(pGeo, pMat);
+                    mesh.position.copy(position);
+                    pGroup.add(mesh);
+                    list.push({
+                        mesh: mesh,
+                        vel: new THREE.Vector3(
+                            (Math.random() - 0.5) * 0.16, Math.random() * 0.15 + 0.05, (Math.random() - 0.5) * 0.16
+                        ),
+                        life: 1.0
+                    });
+                }
+                
+                this.scene.add(pGroup);
+                const tick = () => {
+                    let active = false;
+                    list.forEach(p => {
+                        p.mesh.position.add(p.vel);
+                        p.vel.y -= 0.005;
+                        p.life -= 0.025;
+                        p.mesh.material.opacity = p.life;
+                        p.mesh.scale.setScalar(p.life);
+                        if (p.life > 0) active = true;
+                    });
+                    if (active) requestAnimationFrame(tick);
+                    else {
+                        this.scene.remove(pGroup);
+                        pGeo.dispose();
+                        pMat.dispose();
+                    }
+                };
+                tick();
+            }
+
+            update() {
+                const time = performance.now();
+                this.bobbingElements.forEach(el => {
+                    const bob = Math.sin((time * el.speed) + el.offset) * el.range;
+                    el.mesh.position.y = el.startY + bob;
+                    el.mesh.rotation.y += 0.008;
+                });
+
+                this.monoliths.forEach(m => {
+                    if (!m.solved) m.symbol.rotation.y += 0.015;
+                    else m.symbol.rotation.y = 0;
+                });
+
+                if (this.particles) {
+                    this.particles.rotation.y += 0.0003;
+                    this.particles.position.y = Math.sin(time * 0.0004) * 0.8;
+                }
+
+                if (this.treasureCube) {
+                    this.treasureCube.rotation.x += 0.005;
+                    this.treasureCube.rotation.y += 0.01;
+                    this.treasureCube.rotation.z += 0.003;
+                    this.treasureCube.position.y = 1.8 + Math.sin(time * 0.0015) * 0.15;
+                }
+            }
+        }
+
+        /* =================================================================
+           5. GAME ORCHESTRATOR & EVENT BINDINGS
+           ================================================================= */
+        class Game {
+            constructor() {
+                this.container = document.getElementById('canvas-container');
+                this.state = 'loading';
+                
+                this.startTime = 0;
+                this.elapsedTime = 0;
+                this.attempts = 0;
+                this.correctAnswers = 0;
+                this.lives = 3;
+                this.mistakesPerMonolith = 0;
+                
+                this.activeMonolith = null;
+                this.selectedChoice = null;
+                this.inventory = { arithmetic: false, algebra: false, geometry: false };
+
+                this.initThree();
+                this.initModules();
+                this.setupUIListeners();
+                this.simulateLoading();
+            }
+
+            initThree() {
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x060913);
+
+                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.camera.position.set(0, 10, 15);
+
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.renderer.toneMapping = THREE.ToneMapping;
+                this.container.appendChild(this.renderer.domElement);
+
+                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
+                this.controls.maxPolarAngle = Math.PI / 2 - 0.05;
+                this.controls.minDistance = 6;
+                this.controls.maxDistance = 22;
+                this.controls.enablePan = false;
+
+                window.addEventListener('resize', () => this.onWindowResize(), false);
+            }
+
+            initModules() {
+                this.world = new World(this.scene);
+                this.player = new Player(this.scene);
+                this.player.onRespawnCallback = () => this.triggerRespawnEffect();
+                
+                this.camera.position.set(0, 7, -10);
+                this.controls.target.copy(this.player.position);
+                this.controls.update();
+                
+                this.player.setVisorColor(0x00f2fe);
+            }
+
+            simulateLoading() {
+                const progressBar = document.getElementById('load-progress');
+                const statusText = document.getElementById('load-status');
+                const startBtn = document.getElementById('start-btn');
+                
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.floor(Math.random() * 15) + 5;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(interval);
+                        progressBar.style.width = '100%';
+                        statusText.innerText = 'Acoplamiento dimensional completado';
+                        startBtn.classList.remove('hidden');
+                    } else {
+                        progressBar.style.width = `${progress}%`;
+                        if (progress < 30) statusText.innerText = 'Inicializando motores 3D...';
+                        else if (progress < 60) statusText.innerText = 'Sintetizando geometrías flotantes...';
+                        else if (progress < 90) statusText.innerText = 'Conectando nexos matemáticos...';
+                    }
+                }, 100);
+            }
+
+            startGame() {
+                this.state = 'playing';
+                gameAudio.init();
+                
+                document.getElementById('loading-screen').classList.remove('active');
+                setTimeout(() => {
+                    document.getElementById('loading-screen').classList.add('hidden');
+                    document.getElementById('hud').classList.remove('hidden');
+                }, 500);
+
+                this.startTime = Date.now();
+                this.animate();
+            }
+
+            setupUIListeners() {
+                document.getElementById('start-btn').addEventListener('click', () => this.startGame());
+                document.getElementById('close-modal-btn').addEventListener('click', () => this.closeMathModal());
+                document.getElementById('submit-answer-btn').addEventListener('click', () => this.checkAnswer());
+                
+                document.getElementById('math-answer-input').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') this.checkAnswer();
+                });
+
+                window.addEventListener('keydown', (e) => {
+                    if (e.code === 'KeyE') {
+                        if (this.state === 'playing') this.attemptInteraction();
+                    }
+                });
+
+                document.getElementById('restart-btn').addEventListener('click', () => this.resetNexusGame());
+                document.getElementById('retry-btn').addEventListener('click', () => this.resetNexusGame());
+            }
+
+            attemptInteraction() {
+                const monolith = this.getNearestMonolith();
+                if (monolith) this.openMathModal(monolith);
+            }
+
+            getNearestMonolith() {
+                if (!this.player) return null;
+                let closest = null;
+                let minDist = 9999;
+
+                this.world.monoliths.forEach(m => {
+                    if (m.solved) return;
+                    if (m.id.startsWith('key_')) {
+                        const parentType = m.id.replace('key_', '');
+                        if (!this.world.bridges[parentType].active) return;
+                    }
+                    const dist = this.player.position.distanceTo(m.position);
+                    if (dist < m.radius && dist < minDist) {
+                        minDist = dist;
+                        closest = m;
+                    }
+                });
+                return closest;
+            }
+
+            openMathModal(monolith) {
+                this.state = 'interacting';
+                this.activeMonolith = monolith;
+                gameAudio.playInteract();
+                
+                document.getElementById('hud').style.opacity = '0.3';
+                const modal = document.getElementById('math-modal');
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.add('active'), 10);
+                
+                document.getElementById('math-answer-input').value = '';
+                this.selectedChoice = null;
+                this.mistakesPerMonolith = 0;
+                
+                const feedback = document.getElementById('feedback-message');
+                feedback.innerText = '';
+                feedback.className = 'feedback-msg';
+
+                let categoryKey = 'arithmetic';
+                let difficulty = 0;
+
+                if (monolith.id === 'bridge_arithmetic') { difficulty = 0; categoryKey = 'arithmetic'; }
+                else if (monolith.id === 'key_arithmetic') { difficulty = 1; categoryKey = 'arithmetic'; }
+                else if (monolith.id === 'bridge_algebra') { difficulty = 0; categoryKey = 'algebra'; }
+                else if (monolith.id === 'key_algebra') { difficulty = 1; categoryKey = 'algebra'; }
+                else if (monolith.id === 'bridge_geometry') { difficulty = 0; categoryKey = 'geometry'; }
+                else if (monolith.id === 'key_geometry') { difficulty = 1; categoryKey = 'geometry'; }
+
+                const q = mathEngine.generateQuestion(categoryKey, difficulty);
+                this.activeQuestion = q;
+
+                document.getElementById('modal-monolith-type').innerText = monolith.label;
+                document.getElementById('question-category').innerText = `Categoría: ${q.category} - Nivel de energía`;
+                document.getElementById('question-text').innerHTML = q.text;
+
+                const textContainer = document.getElementById('input-container-text');
+                const choiceContainer = document.getElementById('input-container-choice');
+
+                if (q.type === 'input') {
+                    textContainer.classList.remove('hidden');
+                    choiceContainer.classList.add('hidden');
+                    setTimeout(() => document.getElementById('math-answer-input').focus(), 150);
+                } else {
+                    textContainer.classList.add('hidden');
+                    choiceContainer.classList.remove('hidden');
+
+                    const grid = document.getElementById('math-choices-grid');
+                    grid.innerHTML = '';
+                    
+                    q.choices.forEach(choice => {
+                        const btn = document.createElement('button');
+                        btn.className = 'choice-btn';
+                        btn.innerText = choice;
+                        btn.addEventListener('click', () => {
+                            document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+                            btn.classList.add('selected');
+                            this.selectedChoice = choice;
+                        });
+                        grid.appendChild(btn);
+                    });
+                }
+            }
+
+            closeMathModal() {
+                const modal = document.getElementById('math-modal');
+                modal.classList.remove('active');
+                document.getElementById('hud').style.opacity = '1.0';
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    this.state = 'playing';
+                    this.activeMonolith = null;
+                }, 300);
+            }
+
+            checkAnswer() {
+                if (!this.activeQuestion) return;
+
+                let userAnswer = "";
+                if (this.activeQuestion.type === 'input') {
+                    userAnswer = document.getElementById('math-answer-input').value.trim();
+                } else {
+                    userAnswer = this.selectedChoice ? this.selectedChoice.trim() : "";
+                }
+
+                if (userAnswer === "") {
+                    this.showFeedback("Por favor, ingresa o selecciona una respuesta.", false);
+                    return;
+                }
+
+                this.attempts++;
+                const isCorrect = (userAnswer.toLowerCase() === this.activeQuestion.answer.toLowerCase());
+
+                if (isCorrect) {
+                    this.correctAnswers++;
+                    this.showFeedback("¡Decodificación correcta! Canalizando energía...", true);
+                    gameAudio.playCorrect();
+                    
+                    setTimeout(() => {
+                        this.handleMonolithSolved(this.activeMonolith);
+                        this.closeMathModal();
+                    }, 1000);
+                } else {
+                    this.mistakesPerMonolith++;
+                    
+                    if (this.mistakesPerMonolith >= 3) {
+                        this.showFeedback("¡Daño estructural! Redireccionando al nexo...", false);
+                        gameAudio.playWrong();
+                        
+                        const modalContent = document.querySelector('.modal-content');
+                        modalContent.classList.add('shake');
+                        setTimeout(() => modalContent.classList.remove('shake'), 400);
+                        
+                        setTimeout(() => {
+                            this.closeMathModal();
+                            this.deductLife();
+                            if (this.lives > 0) {
+                                // Respawn silencioso: NO llama onRespawnCallback
+                                // para evitar que triggerRespawnEffect() quite una segunda vida
+                                gameAudio.playRespawn();
+                                this.player.position.set(0, 6, 5);
+                                this.player.velocity.set(0, 0, 0);
+                                this.player.isGrounded = false;
+                                this.player.mesh.position.copy(this.player.position);
+                                this.updateMissionText('⚠️ Daño estructural — Dron reensamblado en la base');
+                            }
+                        }, 1000);
+                    } else {
+                        const modalContent = document.querySelector('.modal-content');
+                        modalContent.classList.add('shake');
+                        setTimeout(() => modalContent.classList.remove('shake'), 400);
+
+                        const remaining = 3 - this.mistakesPerMonolith;
+                        this.showFeedback(`Firma de energía errónea. Quedan ${remaining} intentos.`, false);
+                        gameAudio.playWrong();
+                    }
+                }
+            }
+
+            showFeedback(message, isCorrect) {
+                const feedback = document.getElementById('feedback-message');
+                feedback.innerText = message;
+                feedback.className = `feedback-msg show ${isCorrect ? 'correct' : 'incorrect'}`;
+            }
+
+            handleMonolithSolved(monolith) {
+                monolith.solved = true;
+                monolith.symbol.material.color.setHex(0x10b981);
+                monolith.light.color.setHex(0x10b981);
+
+                const id = monolith.id;
+                if (id.startsWith('bridge_')) {
+                    const type = id.replace('bridge_', '');
+                    this.world.buildBridge(type);
+                    this.updateMissionText(`Puente hacia isla de ${type.toUpperCase()} construido. Cruza y reclama la Llave.`);
+                } else if (id.startsWith('key_')) {
+                    const type = id.replace('key_', '');
+                    this.inventory[type] = true;
+                    gameAudio.playKeyCollect();
+
+                    const slot = document.getElementById(`slot-${type}`);
+                    slot.classList.add('acquired');
+                    
+                    const dot = document.getElementById(`dot-${type}`);
+                    dot.className = 'dot completed';
+
+                    const keyIndex = type === 'arithmetic' ? 0 : type === 'algebra' ? 1 : 2;
+                    this.world.activateVaultLock(keyIndex);
+
+                    let nextColor = 0x00f2fe;
+                    if (type === 'arithmetic') nextColor = 0x00f2fe;
+                    if (type === 'algebra') nextColor = 0xff007f;
+                    if (type === 'geometry') nextColor = 0x10b981;
+                    this.player.setVisorColor(nextColor);
+
+                    if (this.inventory.arithmetic && this.inventory.algebra && this.inventory.geometry) {
+                        this.updateMissionText("¡Todas las llaves obtenidas! Dirígete al pedestal central para abrir la bóveda.");
+                    } else {
+                        this.updateMissionText(`¡Llave de ${type.toUpperCase()} recuperada! Encuentra las llaves restantes.`);
+                    }
+                }
+            }
+
+            updateMissionText(text) {
+                document.getElementById('current-quest').innerText = text;
+            }
+
+            triggerRespawnEffect() {
+                const uiContainer = document.getElementById('ui-container');
+                uiContainer.style.background = 'rgba(239, 68, 68, 0.4)';
+                setTimeout(() => uiContainer.style.background = 'transparent', 150);
+                
+                this.deductLife();
+                if (this.lives > 0) {
+                    this.updateMissionText("¡Caída fuera de órbita! Reensamblando dron...");
+                }
+            }
+
+            deductLife() {
+                this.lives--;
+                this.updateLivesHUD();
+                
+                if (this.lives <= 0) {
+                    this.triggerGameOver();
+                } else {
+                    gameAudio.playLoseLife();
+                }
+            }
+
+            updateLivesHUD() {
+                for (let i = 1; i <= 3; i++) {
+                    const heart = document.getElementById(`heart-${i}`);
+                    if (heart) {
+                        if (i > this.lives) heart.classList.add('lost');
+                        else heart.classList.remove('lost');
+                    }
+                }
+            }
+
+            triggerGameOver() {
+                this.state = 'gameover';
+                gameAudio.playGameOver();
+                gameAudio.stopAmbientPad();
+                
+                document.getElementById('hud').classList.add('hidden');
+                
+                const modal = document.getElementById('math-modal');
+                modal.classList.remove('active');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+                
+                const gameOverScreen = document.getElementById('game-over-screen');
+                gameOverScreen.classList.remove('hidden');
+                setTimeout(() => gameOverScreen.classList.add('active'), 10);
+            }
+
+            checkVaultProximity() {
+                if (this.inventory.arithmetic && this.inventory.algebra && this.inventory.geometry) {
+                    const dist = this.player.position.distanceTo(new THREE.Vector3(0, 0, 0));
+                    if (dist < 3.2 && this.state === 'playing') {
+                        this.triggerVictory();
+                    }
+                }
+            }
+
+            triggerVictory() {
+                this.state = 'victory';
+                this.world.openVaultShield();
+                gameAudio.stopAmbientPad();
+
+                const timeDiff = Date.now() - this.startTime;
+                const minutes = Math.floor(timeDiff / 60000);
+                const seconds = Math.floor((timeDiff % 60000) / 1000);
+                const timeStr = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                const accuracy = this.attempts > 0 ? Math.round((this.correctAnswers / this.attempts) * 100) : 100;
+                
+                document.getElementById('stat-time').innerText = timeStr;
+                document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
+
+                document.getElementById('hud').classList.add('hidden');
+                const vict = document.getElementById('victory-screen');
+                vict.classList.remove('hidden');
+                setTimeout(() => vict.classList.add('active'), 100);
+            }
+
+            resetNexusGame() {
+                this.player.destroy();
+                const toRemove = [];
+                this.scene.children.forEach(child => {
+                    if (!(child instanceof THREE.HemisphereLight || child instanceof THREE.DirectionalLight || child instanceof THREE.PointLight)) {
+                        toRemove.push(child);
+                    }
+                });
+                toRemove.forEach(child => this.scene.remove(child));
+
+                this.initModules();
+
+                this.inventory = { arithmetic: false, algebra: false, geometry: false };
+                this.attempts = 0;
+                this.correctAnswers = 0;
+                this.lives = 3;
+                this.updateLivesHUD();
+
+                document.querySelectorAll('.key-slot').forEach(s => s.classList.remove('acquired'));
+                document.querySelectorAll('.dot').forEach(d => d.className = 'dot');
+                this.updateMissionText("Explora el archipiélago y activa los Monolitos");
+
+                document.getElementById('victory-screen').classList.remove('active');
+                setTimeout(() => document.getElementById('victory-screen').classList.add('hidden'), 500);
+                
+                document.getElementById('game-over-screen').classList.remove('active');
+                setTimeout(() => document.getElementById('game-over-screen').classList.add('hidden'), 500);
+                
+                document.getElementById('hud').classList.remove('hidden');
+
+                this.startTime = Date.now();
+                this.state = 'playing';
+                gameAudio.startAmbientPad();
+            }
+
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            animate() {
+                if (this.state === 'loading') return;
+                requestAnimationFrame(() => this.animate());
+
+                if (this.state === 'playing') {
+                    this.player.update(this.camera, this.world.colliders);
+                    this.checkVaultProximity();
+                    
+                    const nearest = this.getNearestMonolith();
+                    const tooltip = document.getElementById('interact-prompt');
+                    if (nearest) {
+                        tooltip.classList.remove('hidden');
+                        const tooltipText = tooltip.querySelector('.prompt-text');
+                        if (nearest.id.startsWith('bridge_')) {
+                            tooltipText.innerText = `Presiona E para activar Puente`;
+                        } else {
+                            tooltipText.innerText = `Presiona E para obtener Llave`;
+                        }
+                    } else {
+                        tooltip.classList.add('hidden');
+                    }
+                }
+
+                if (this.player) {
+                    this.controls.target.lerp(this.player.position, 0.08);
+                }
+                this.controls.update();
+                this.world.update();
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // Start game instance once DOM is loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            window.gameInstance = new Game();
+        });
+    </script>
+</body>
+</html>
