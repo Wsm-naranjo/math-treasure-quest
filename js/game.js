@@ -31,10 +31,28 @@ class Game {
             geometry: false
         };
 
+        // Mobile detection
+        this.isMobile = this.detectMobile();
+        
+        // Joystick state for mobile
+        this.joystick = {
+            active: false,
+            startX: 0,
+            startY: 0,
+            deltaX: 0,
+            deltaY: 0
+        };
+
         this.initThree();
         this.initModules();
         this.setupUIListeners();
+        this.setupMobileControls();
         this.simulateLoading();
+    }
+    
+    detectMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+               (window.innerWidth <= 768);
     }
 
     initThree() {
@@ -170,6 +188,100 @@ class Game {
 
         document.getElementById('retry-btn').addEventListener('click', () => {
             this.resetNexusGame();
+        });
+    }
+
+    setupMobileControls() {
+        if (!this.isMobile) return;
+
+        // Show mobile controls on mobile devices
+        document.getElementById('mobile-controls').style.display = 'block';
+
+        // Joystick touch controls
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickKnob = document.getElementById('joystick-knob');
+
+        const handleJoystickStart = (e) => {
+            e.preventDefault();
+            this.joystick.active = true;
+            
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = joystickZone.getBoundingClientRect();
+            this.joystick.startX = rect.left + rect.width / 2;
+            this.joystick.startY = rect.top + rect.height / 2;
+        };
+
+        const handleJoystickMove = (e) => {
+            if (!this.joystick.active) return;
+            e.preventDefault();
+
+            const touch = e.touches ? e.touches[0] : e;
+            const deltaX = touch.clientX - this.joystick.startX;
+            const deltaY = touch.clientY - this.joystick.startY;
+
+            // Limit joystick radius
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const maxDistance = 30;
+
+            if (distance > maxDistance) {
+                const angle = Math.atan2(deltaY, deltaX);
+                this.joystick.deltaX = Math.cos(angle) * maxDistance;
+                this.joystick.deltaY = Math.sin(angle) * maxDistance;
+            } else {
+                this.joystick.deltaX = deltaX;
+                this.joystick.deltaY = deltaY;
+            }
+
+            // Move knob visually
+            joystickKnob.style.transform = `translate(${this.joystick.deltaX}px, ${this.joystick.deltaY}px)`;
+        };
+
+        const handleJoystickEnd = (e) => {
+            e.preventDefault();
+            this.joystick.active = false;
+            this.joystick.deltaX = 0;
+            this.joystick.deltaY = 0;
+            joystickKnob.style.transform = 'translate(0px, 0px)';
+        };
+
+        joystickZone.addEventListener('touchstart', handleJoystickStart, { passive: false });
+        joystickZone.addEventListener('touchmove', handleJoystickMove, { passive: false });
+        joystickZone.addEventListener('touchend', handleJoystickEnd, { passive: false });
+        joystickZone.addEventListener('touchcancel', handleJoystickEnd, { passive: false });
+
+        // Mouse support for testing on desktop
+        joystickZone.addEventListener('mousedown', handleJoystickStart);
+        document.addEventListener('mousemove', handleJoystickMove);
+        document.addEventListener('mouseup', handleJoystickEnd);
+
+        // Jump button
+        const jumpBtn = document.getElementById('btn-mobile-jump');
+        jumpBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (this.player && this.state === 'playing') {
+                this.player.keys.space = true;
+            }
+        });
+        jumpBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (this.player) {
+                this.player.keys.space = false;
+            }
+        });
+
+        // Interact button
+        const interactBtn = document.getElementById('btn-mobile-interact');
+        interactBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (this.state === 'playing') {
+                this.attemptInteraction();
+            }
+        });
+        interactBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (this.state === 'playing') {
+                this.attemptInteraction();
+            }
         });
     }
 
@@ -523,6 +635,15 @@ class Game {
         this.lives = 3;
         this.updateLivesHUD();
 
+        // Reset joystick state
+        this.joystick = {
+            active: false,
+            startX: 0,
+            startY: 0,
+            deltaX: 0,
+            deltaY: 0
+        };
+
         // Reset HUD styling
         document.querySelectorAll('.key-slot').forEach(s => s.classList.remove('acquired'));
         document.querySelectorAll('.dot').forEach(d => d.className = 'dot');
@@ -556,24 +677,46 @@ class Game {
 
         // Update physics/move only if not in modal
         if (this.state === 'playing') {
+            // Apply joystick input to player on mobile
+            if (this.isMobile && this.joystick.active) {
+                this.applyJoystickToPlayer();
+            }
+            
             this.player.update(this.camera, this.world.colliders);
             this.checkVaultProximity();
             
-            // Check monolith distances to display interact tooltip prompt
+            // Check monolith distances to display interact tooltip prompt or mobile button
             const nearest = this.getNearestMonolith();
-            const tooltip = document.getElementById('interact-prompt');
-            if (nearest) {
-                tooltip.classList.remove('hidden');
-                
-                // Dynamically update text depending on what it builds
-                const tooltipText = tooltip.querySelector('.prompt-text');
-                if (nearest.id.startsWith('bridge_')) {
-                    tooltipText.innerText = `Presiona E para activar Puente`;
+            
+            if (this.isMobile) {
+                // Show/hide mobile interact button
+                const interactBtn = document.getElementById('btn-mobile-interact');
+                if (nearest) {
+                    interactBtn.style.display = 'block';
+                    if (nearest.id.startsWith('bridge_')) {
+                        interactBtn.innerText = 'PUENTE';
+                    } else {
+                        interactBtn.innerText = 'LLAVE';
+                    }
                 } else {
-                    tooltipText.innerText = `Presiona E para obtener Llave`;
+                    interactBtn.style.display = 'none';
                 }
             } else {
-                tooltip.classList.add('hidden');
+                // Desktop: Show tooltip
+                const tooltip = document.getElementById('interact-prompt');
+                if (nearest) {
+                    tooltip.classList.remove('hidden');
+                    
+                    // Dynamically update text depending on what it builds
+                    const tooltipText = tooltip.querySelector('.prompt-text');
+                    if (nearest.id.startsWith('bridge_')) {
+                        tooltipText.innerText = `Presiona E para activar Puente`;
+                    } else {
+                        tooltipText.innerText = `Presiona E para obtener Llave`;
+                    }
+                } else {
+                    tooltip.classList.add('hidden');
+                }
             }
         }
 
@@ -586,6 +729,30 @@ class Game {
         this.world.update();
         
         this.renderer.render(this.scene, this.camera);
+    }
+
+    applyJoystickToPlayer() {
+        if (!this.player) return;
+
+        // Convert joystick delta to normalized direction
+        const magnitude = Math.sqrt(this.joystick.deltaX * this.joystick.deltaX + this.joystick.deltaY * this.joystick.deltaY);
+        
+        if (magnitude > 5) { // Dead zone threshold
+            const normalizedX = this.joystick.deltaX / 30; // Max radius is 30
+            const normalizedY = this.joystick.deltaY / 30;
+
+            // Map joystick to WASD keys
+            this.player.keys.w = normalizedY < -0.3;
+            this.player.keys.s = normalizedY > 0.3;
+            this.player.keys.a = normalizedX < -0.3;
+            this.player.keys.d = normalizedX > 0.3;
+        } else {
+            // Release all keys when joystick is in dead zone
+            this.player.keys.w = false;
+            this.player.keys.s = false;
+            this.player.keys.a = false;
+            this.player.keys.d = false;
+        }
     }
 }
 
