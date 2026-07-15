@@ -507,6 +507,74 @@
             transform: translate(-50%, 20px) scale(0.9);
         }
 
+        /* --- ACHIEVEMENT / SUCCESS BANNER --- */
+        #achievement-banner {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            z-index: 150;
+            background: rgba(8, 12, 28, 0.9);
+            border: 2px solid var(--color-cyan);
+            box-shadow: 0 0 35px rgba(0, 242, 254, 0.35);
+            border-radius: 20px;
+            padding: 16px 36px;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        #achievement-banner.hidden-banner {
+            display: none !important;
+        }
+
+        #achievement-banner.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .banner-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 80%);
+            z-index: -1;
+        }
+
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .banner-icon {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+            animation: heartbeat 1.5s infinite ease-in-out;
+        }
+
+        .banner-text-group h2 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .banner-text-group p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
         .prompt-content {
             background: rgba(6, 9, 19, 0.85);
             border: 1px solid var(--color-cyan);
@@ -972,6 +1040,18 @@
             </div>
         </div>
 
+        <!-- Achievement / Success Banner -->
+        <div id="achievement-banner" class="hidden-banner">
+            <div class="banner-glow"></div>
+            <div class="banner-content">
+                <span class="banner-icon" id="banner-icon">⚡</span>
+                <div class="banner-text-group">
+                    <h2 id="banner-title">Área Completada</h2>
+                    <p id="banner-desc">El puente matemático ha sido activado.</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Math Question Modal -->
         <div id="math-modal" class="hidden overlay-screen">
             <div class="glass-panel modal-content">
@@ -1282,7 +1362,7 @@
                     {
                         text: "Si los dos ángulos menores de un triángulo miden 35° y 65°, ¿cuánto mide el tercer ángulo?",
                         choices: ["70°", "80°", "90°", "100°"],
-                        answer: "80"
+                        answer: "80°"
                     },
                     {
                         text: "Un rectángulo tiene un perímetro de 36 cm. Si su altura es de 6 cm, ¿cuál es su área en cm²?",
@@ -2256,6 +2336,8 @@
                 this.correctAnswers = 0;
                 this.lives = 3;
                 this.mistakesPerMonolith = 0;
+                this.isProcessingAnswer = false;
+                this.achievementTimeout = null;
                 
                 this.activeMonolith = null;
                 this.selectedChoice = null;
@@ -2458,11 +2540,17 @@
                     modal.classList.add('hidden');
                     this.state = 'playing';
                     this.activeMonolith = null;
+                    
+                    // Restaurar flag y botón
+                    this.isProcessingAnswer = false;
+                    const submitBtn = document.getElementById('submit-answer-btn');
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1.0';
                 }, 300);
             }
 
             checkAnswer() {
-                if (!this.activeQuestion) return;
+                if (!this.activeQuestion || this.isProcessingAnswer) return;
 
                 let userAnswer = "";
                 if (this.activeQuestion.type === 'input') {
@@ -2475,6 +2563,11 @@
                     this.showFeedback("Por favor, ingresa o selecciona una respuesta.", false);
                     return;
                 }
+
+                this.isProcessingAnswer = true;
+                const submitBtn = document.getElementById('submit-answer-btn');
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
 
                 this.attempts++;
                 const isCorrect = (userAnswer.toLowerCase() === this.activeQuestion.answer.toLowerCase());
@@ -2521,6 +2614,11 @@
                         const remaining = 3 - this.mistakesPerMonolith;
                         this.showFeedback(`Firma de energía errónea. Quedan ${remaining} intentos.`, false);
                         gameAudio.playWrong();
+
+                        // Permitir reintentar
+                        this.isProcessingAnswer = false;
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1.0';
                     }
                 }
             }
@@ -2537,10 +2635,20 @@
                 monolith.light.color.setHex(0x10b981);
 
                 const id = monolith.id;
+                let title = "¡Monolito Decodificado!";
+                let desc = "";
+                let icon = "⚡";
+                let colorHex = "#00f2fe";
+
                 if (id.startsWith('bridge_')) {
                     const type = id.replace('bridge_', '');
                     this.world.buildBridge(type);
                     this.updateMissionText(`Puente hacia isla de ${type.toUpperCase()} construido. Cruza y reclama la Llave.`);
+                    
+                    title = "¡Puente Energizado!";
+                    desc = `Puente de ${type.toUpperCase()} construido con éxito.`;
+                    icon = "🌉";
+                    colorHex = type === 'arithmetic' ? "#00f2fe" : type === 'algebra' ? "#ff007f" : "#10b981";
                 } else if (id.startsWith('key_')) {
                     const type = id.replace('key_', '');
                     this.inventory[type] = true;
@@ -2563,10 +2671,45 @@
 
                     if (this.inventory.arithmetic && this.inventory.algebra && this.inventory.geometry) {
                         this.updateMissionText("¡Todas las llaves obtenidas! Dirígete al pedestal central para abrir la bóveda.");
+                        title = "¡Todas las Llaves!";
+                        desc = "Dirígete al pedestal central para abrir la bóveda.";
+                        icon = "👑";
+                        colorHex = "#f59e0b";
                     } else {
                         this.updateMissionText(`¡Llave de ${type.toUpperCase()} recuperada! Encuentra las llaves restantes.`);
+                        title = "¡Llave Obtenida!";
+                        desc = `Llave de ${type.toUpperCase()} recuperada con éxito.`;
+                        icon = "🔑";
+                        colorHex = type === 'arithmetic' ? "#00f2fe" : type === 'algebra' ? "#ff007f" : "#10b981";
                     }
                 }
+
+                this.showAchievementBanner(title, desc, icon, colorHex);
+            }
+
+            showAchievementBanner(title, desc, icon, colorHex) {
+                const banner = document.getElementById('achievement-banner');
+                const bTitle = document.getElementById('banner-title');
+                const bDesc = document.getElementById('banner-desc');
+                const bIcon = document.getElementById('banner-icon');
+                
+                bTitle.innerText = title;
+                bDesc.innerText = desc;
+                bIcon.innerText = icon;
+                
+                banner.style.borderColor = colorHex;
+                banner.style.boxShadow = `0 0 35px ${colorHex}80`;
+                
+                banner.classList.remove('hidden-banner');
+                banner.classList.add('show');
+                
+                if (this.achievementTimeout) clearTimeout(this.achievementTimeout);
+                this.achievementTimeout = setTimeout(() => {
+                    banner.classList.remove('show');
+                    setTimeout(() => {
+                        banner.classList.add('hidden-banner');
+                    }, 500);
+                }, 3500);
             }
 
             updateMissionText(text) {

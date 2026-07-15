@@ -35,7 +35,7 @@ class MathEngine {
     generateQuestion(category, level) {
         // category is 'arithmetic', 'algebra', or 'geometry'
         // level is 0, 1, 2 (representing difficulty steps on the island)
-        
+
         switch (category) {
             case 'arithmetic':
                 return this.generateArithmetic(level);
@@ -52,7 +52,7 @@ class MathEngine {
         let text = "";
         let answer = 0;
         let type = 'input'; // Input field
-        
+
         if (level === 0) {
             // Basic addition/subtraction
             const a = Math.floor(Math.random() * 50) + 10;
@@ -69,7 +69,7 @@ class MathEngine {
             const a = Math.floor(Math.random() * 12) + 4;
             const b = Math.floor(Math.random() * 11) + 3;
             const c = Math.floor(Math.random() * 20) + 5;
-            
+
             if (Math.random() > 0.5) {
                 text = `¿Cuánto es ${a} &times; ${b} + ${c}?`;
                 answer = (a * b) + c;
@@ -83,7 +83,7 @@ class MathEngine {
             const answerMultiplier = Math.floor(Math.random() * 12) + 4; // 4 to 15
             const dividend = divisor * answerMultiplier;
             const extra = Math.floor(Math.random() * 15) + 2;
-            
+
             text = `Calcula: (${dividend} &divide; ${divisor}) + ${extra}`;
             answer = answerMultiplier + extra;
         }
@@ -100,7 +100,7 @@ class MathEngine {
         let text = "";
         let answer = "";
         let type = 'input';
-        
+
         if (level === 0) {
             // Arithmetic progression
             const start = Math.floor(Math.random() * 10) + 2;
@@ -114,7 +114,7 @@ class MathEngine {
             const a = Math.floor(Math.random() * 5) + 2; // A is 2 to 6
             const b = Math.floor(Math.random() * 15) + 1; // B is 1 to 15
             const c = (a * x) + b;
-            
+
             text = `Resuelve para X:  ${a}x + ${b} = ${c}`;
             answer = x.toString();
         } else {
@@ -152,7 +152,7 @@ class MathEngine {
         const index = Math.min(level, this.geometryQuestions.length - 1);
         // Let's randomize a bit
         let q = this.geometryQuestions[index];
-        
+
         // If they repeat, pick an offset
         if (level >= 2) {
             const randomOffset = Math.floor(Math.random() * (this.geometryQuestions.length - 2)) + 2;
