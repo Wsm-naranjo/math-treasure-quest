@@ -1584,68 +1584,69 @@
             }
         }
 
-        @media (max-width: 850px) and (orientation: portrait) {
-            .overlay-screen#loading-screen {
-                align-items: flex-start;
-                overflow-y: auto;
-                padding: 12px 0;
+        @media (max-width: 850px) {
+            #loading-screen {
+                align-items: flex-start !important;
+                overflow-y: auto !important;
+                padding: 12px 0 !important;
             }
             #loading-screen .loading-content {
-                padding: 20px 18px;
+                padding: 18px 16px;
                 margin: auto 0;
-                max-width: 400px;
+                max-width: 380px;
             }
             #loading-screen .logo-container {
-                margin-bottom: 12px;
+                margin-bottom: 8px;
             }
             #loading-screen h1 {
-                font-size: 1.4rem;
+                font-size: 1.2rem;
             }
             #loading-screen .subtitle {
-                font-size: 0.78rem;
-                margin-bottom: 16px;
-            }
-            #loading-screen .instructions-panel {
-                padding: 12px 14px;
+                font-size: 0.72rem;
                 margin-bottom: 12px;
             }
+            #loading-screen .instructions-panel {
+                padding: 10px 12px;
+                margin-bottom: 10px;
+            }
             #loading-screen .instructions-panel h3 {
-                font-size: 0.8rem;
-                margin-bottom: 8px;
+                font-size: 0.75rem;
+                margin-bottom: 6px;
             }
             #loading-screen .instructions-panel li {
-                font-size: 0.75rem;
-                margin-bottom: 8px;
+                font-size: 0.7rem;
+                margin-bottom: 6px;
             }
             #loading-screen .key {
-                font-size: 0.65rem;
+                font-size: 0.6rem;
                 padding: 1px 4px;
             }
             #loading-screen .progress-bar-container {
-                margin-bottom: 8px;
+                height: 4px;
+                margin-bottom: 6px;
             }
             #loading-screen .loading-status {
-                font-size: 0.7rem;
-                margin-bottom: 14px;
+                font-size: 0.65rem;
+                margin-bottom: 10px;
             }
             #loading-screen .difficulty-panel {
-                margin: 8px 0 12px 0;
+                margin: 6px 0 10px 0;
             }
             #loading-screen .difficulty-panel h3 {
-                font-size: 0.7rem;
+                font-size: 0.65rem;
             }
             #loading-screen .diff-btn {
-                font-size: 0.7rem;
-                padding: 4px 10px;
+                font-size: 0.65rem;
+                padding: 3px 8px;
             }
             #loading-screen .glow-button {
-                font-size: 0.85rem;
-                padding: 10px 20px;
+                font-size: 0.8rem;
+                padding: 8px 16px;
             }
             #loading-screen .glowing-orb {
-                width: 80px;
-                height: 80px;
-                top: -30px;
+                width: 60px;
+                height: 60px;
+                top: -20px;
             }
         }
     </style>
@@ -1672,11 +1673,14 @@
                 
                 <div class="instructions-panel">
                     <h3>Cómo jugar:</h3>
-                    <ul>
-                        <li><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span> o Flechas para desplazarte</li>
+                    <ul id="instructions-list">
+                        <li id="instr-keyboard"><span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span> o Flechas para desplazarte</li>
+                        <li id="instr-mobile" style="display:none">Usa el joystick táctil (izquierda) para desplazarte</li>
                         <li><span class="key">Espacio</span> para saltar</li>
+                        <li id="instr-mobile-jump" style="display:none">Toca el botón <strong>SALTAR</strong> (derecha) para saltar</li>
                         <li><span class="key">Arrastrar Mouse</span> para orbitar la cámara</li>
                         <li>Aproximarse a los <strong>Monolitos</strong> y presionar <span class="key">E</span> o hacer clic para interactuar</li>
+                        <li id="instr-mobile-tap" style="display:none">Toca el mensaje <strong>👆 Toca aquí</strong> en pantalla para interactuar</li>
                     </ul>
                 </div>
                 
@@ -3336,6 +3340,14 @@
                 
                 // Sort game state
                 this.sortOrder = [];
+
+                // Swap instructions for mobile
+                if (this.isMobile) {
+                    document.getElementById('instr-keyboard').style.display = 'none';
+                    document.getElementById('instr-mobile').style.display = '';
+                    document.getElementById('instr-mobile-jump').style.display = '';
+                    document.getElementById('instr-mobile-tap').style.display = '';
+                }
 
                 this.initThree();
                 this.initModules();
